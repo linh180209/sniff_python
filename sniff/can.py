@@ -27,7 +27,10 @@ class Frame(object):
 		self.time = time.time()
 		self.category = CategoryType.SDF
 		self.comment = {}
-	
+
+	def copy_comment(self,newcomment):
+		self.comment = dict(newcomment)
+
 	def get_comment(self):
 		return self.comment
 
@@ -140,10 +143,11 @@ class Frame(object):
 	def add_comment(self,byte,comment):
 		if (byte != -1):
 			s_byte = "byte%d"%byte
-			self.comment[s_byte] = comment	
+			self.comment[s_byte] = comment
 
 	def print_comment(self):
-		result = "{\"type\":\"P\",\"count\":%d,\"id\":%d,\"dlc\":%d, signal:{"%(self.count,self.id,self.dlc)
+		print len(self.comment)
+		result = "{\"type\":\"P\",\"count\":%d,\"id\":0x%X,\"dlc\":%d, signal:{"%(self.count,self.id,self.dlc)
 		i = 0
 		for c,b in self.comment.items():
 			i = i + 1
@@ -154,5 +158,5 @@ class Frame(object):
 		return result
 	
 	def __str__(self):
-		result = "{type:%s,count:%d,id:%X,dlc:%d,data:[%X,%X,%X,%X,%X,%X,%X,%X]}" %("P",self.count,self.id,self.dlc,self.data[0],self.data[1],self.data[2],self.data[3],self.data[4],self.data[5],self.data[6],self.data[7])
+		result = "{type:%s,count:%d,id:0x%X,dlc:%d,data:[0x%X,0x%X,0x%X,0x%X,0x%X,0x%X,0x%X,0x%X]}" %("P",self.count,self.id,self.dlc,self.data[0],self.data[1],self.data[2],self.data[3],self.data[4],self.data[5],self.data[6],self.data[7])
 		return result
