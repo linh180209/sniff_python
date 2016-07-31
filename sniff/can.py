@@ -123,12 +123,12 @@ class Frame(object):
 		assert isinstance(value, int)
 		assert value >= 0 and value <= 8, 'dlc must be between 0 and 8'
 		self._dlc = value
-	
+	#return 0:if the 2 frame not same
 	def compare(self,frame):
 		if(self.id == frame.id and self.dlc == frame.dlc):
 			for i in range(self.dlc):
 				if(self.data[i] != frame.data[i]):
-					if(frame.no_data != -2):
+					if(self.no_data != -2):
 						frame.no_data = i
 						self.no_data = -2
 						if((frame.time - self.time) <= 6):
@@ -140,13 +140,12 @@ class Frame(object):
 			return 1
 		else:
 			return 0
-	def add_comment(self,byte,comment):
+	def add_comment(self,byte,c):
 		if (byte != -1):
 			s_byte = "byte%d"%byte
-			self.comment[s_byte] = comment
+			self.comment[s_byte] = c
 
 	def print_comment(self):
-		print len(self.comment)
 		result = "{\"type\":\"P\",\"count\":%d,\"id\":0x%X,\"dlc\":%d, signal:{"%(self.count,self.id,self.dlc)
 		i = 0
 		for c,b in self.comment.items():
@@ -156,7 +155,10 @@ class Frame(object):
 			else: 
 				result = result + "\"%s\":%s,"%(c,b)
 		return result
-	
+	def print_log(self):
+		result = "[{\"type\":\"%s\",\"count\":%d,\"id\":%d,\"dlc\":%d,\"data\":[%d,%d,%d,%d,%d,%d,%d,%d]}]" %("P",self.count,self.id,self.dlc,self.data[0],self.data[1],self.data[2],self.data[3],self.data[4],self.data[5],self.data[6],self.data[7])
+		return result
+
 	def __str__(self):
 		result = "{type:%s,count:%d,id:0x%X,dlc:%d,data:[0x%X,0x%X,0x%X,0x%X,0x%X,0x%X,0x%X,0x%X]}" %("P",self.count,self.id,self.dlc,self.data[0],self.data[1],self.data[2],self.data[3],self.data[4],self.data[5],self.data[6],self.data[7])
 		return result
