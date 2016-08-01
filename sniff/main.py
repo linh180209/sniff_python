@@ -206,6 +206,8 @@ def end_task():
 def groud_data_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queue):
 	#open devices
 	dev = CantactDev(name_devices)
+	dev.stop()	
+	dev.ser.write('S4\r')
 	dev.start()
 
 	#set time
