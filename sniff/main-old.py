@@ -113,8 +113,6 @@ def add_frame(frame,flags_show_all,step):
 				print_all_frame(frame)
 		else:
 			update_no_data(frame)
-			if(step == 2):
-				print_frame(frame)
 			
 	return frame
 
@@ -205,10 +203,17 @@ def end_task():
 
 def groud_data_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queue):
 	#open devices
+<<<<<<< HEAD
 	dev = CantactDev(name_devices)
 	dev.stop()	
 	dev.ser.write('S6\r')
 	dev.start()
+=======
+	#dev = CantactDev(name_devices)
+	#dev.stop()	
+	#dev.ser.write('S4\r')
+	#dev.start()
+>>>>>>> 8f85e2b10ebbef7e61352f31a18c60eb1be20f04
 
 	#set time
 	time_pause = 0
@@ -217,11 +222,12 @@ def groud_data_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queu
 
 	#while in 2 min and not press 'q' to exit
 	while((time.time()-start_time) < (2*60 + time_pause) and (flags.value != 2)):
-		#time.sleep(1)
+		time.sleep(1)
 		if(flags.value == 0):
 			if(t_pause != 0):
 				time_pause = time_pause + (time.time() - t_pause)
 				t_pause = 0
+<<<<<<< HEAD
 			try:
 				frame = dev.recv()
 			except:
@@ -230,6 +236,13 @@ def groud_data_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queu
 			#if(queue.empty() == False):
 			#	frame = queue.get()
 			#	add_frame(frame,True,1)
+=======
+			#frame = dev.recv()
+			#add_frame(frame,True,1)
+			if(queue.empty() == False):
+				frame = queue.get()
+				add_frame(frame,True,1)
+>>>>>>> 8f85e2b10ebbef7e61352f31a18c60eb1be20f04
 		elif(flags.value == 1):
 			if t_pause == 0:
 				t_pause = time.time()
@@ -241,6 +254,7 @@ def groud_data_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queu
 	put_data_testing()
 
 	while(flags.value != 2):
+<<<<<<< HEAD
 		try:
 			frame = dev.recv()
 		except:
@@ -250,10 +264,19 @@ def groud_data_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queu
 		#if(queue.empty() == False):
 		#	frame = queue.get()
 		#	frame_t = add_frame(frame,False,2)
+=======
+		#frame = dev.recv()
+		#frame_t = add_frame(frame,False,2)
+		time.sleep(1)
+		if(queue.empty() == False):
+			frame = queue.get()
+			frame_t = add_frame(frame,False,2)
+>>>>>>> 8f85e2b10ebbef7e61352f31a18c60eb1be20f04
 			
 		#if frame have category is LFCDF
 		if(frame_t.category == 2 or frame_t.category == 1):
 			if(check_added_comment_all(frame_comment_t,frame_t) == True):
+				print_frame(frame_t)
 				queue_frame_comment.put(frame_t)
 				flags_comment.value = 1	
 				print "\nplease comment the affection:"
