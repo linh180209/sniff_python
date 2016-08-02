@@ -207,7 +207,7 @@ def groud_data_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queu
 	#open devices
 	dev = CantactDev(name_devices)
 	dev.stop()	
-	dev.ser.write('S4\r')
+	dev.ser.write('S6\r')
 	dev.start()
 
 	#set time
@@ -222,7 +222,10 @@ def groud_data_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queu
 			if(t_pause != 0):
 				time_pause = time_pause + (time.time() - t_pause)
 				t_pause = 0
-			frame = dev.recv()
+			try:
+				frame = dev.recv()
+			except:
+				pass
 			add_frame(frame,True,1)
 			#if(queue.empty() == False):
 			#	frame = queue.get()
@@ -238,7 +241,10 @@ def groud_data_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queu
 	put_data_testing()
 
 	while(flags.value != 2):
-		frame = dev.recv()
+		try:
+			frame = dev.recv()
+		except:
+			pass
 		frame_t = add_frame(frame,False,2)
 		#time.sleep(1)
 		#if(queue.empty() == False):
