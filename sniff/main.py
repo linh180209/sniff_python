@@ -206,7 +206,7 @@ def groud_data_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queu
 
 	dev = CantactDev(name_devices)
 	dev.stop()	
-	dev.ser.write('S6\r')
+	dev.ser.write('S4\r')
 	dev.start()
 
 	#dev = CantactDev(name_devices)
@@ -222,7 +222,7 @@ def groud_data_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queu
 
 	#while in 2 min and not press 'q' to exit
 	while((time.time()-start_time) < (2*60 + time_pause) and (flags.value != 2)):
-		time.sleep(1)
+		#time.sleep(1)
 		if(flags.value == 0):
 			if(t_pause != 0):
 				time_pause = time_pause + (time.time() - t_pause)
@@ -267,7 +267,7 @@ def groud_data_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queu
 
 		#frame = dev.recv()
 		#frame_t = add_frame(frame,False,2)
-		time.sleep(1)
+		#time.sleep(1)
 		if(queue.empty() == False):
 			frame = queue.get()
 			frame_t = add_frame(frame,False,2)
@@ -281,7 +281,8 @@ def groud_data_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queu
 				flags_comment.value = 1	
 				print "\nplease comment the affection:"
 				while(flags_comment.value != 0):
-					time.sleep(0.1)
+					flan =1
+					#time.sleep(0.1)
 			
 	
 def start_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queue):
