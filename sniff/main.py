@@ -201,19 +201,12 @@ def put_data_testing():
 def end_task():
 	task_data.terminate()
 
-def groud_data_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queue):
+def group_data_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queue):
 	#open devices
-
 	dev = CantactDev(name_devices)
 	dev.stop()	
 	dev.ser.write('S4\r')
 	dev.start()
-
-	#dev = CantactDev(name_devices)
-	#dev.stop()	
-	#dev.ser.write('S4\r')
-	#dev.start()
-
 
 	#set time
 	time_pause = 0
@@ -221,13 +214,12 @@ def groud_data_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queu
 	start_time = time.time()
 
 	#while in 2 min and not press 'q' to exit
-	while((time.time()-start_time) < (2*60 + time_pause) and (flags.value != 2)):
+	while((time.time()-start_time) < (2*60 + time_pause) and (flags.valu != 2)):
 		#time.sleep(1)
 		if(flags.value == 0):
 			if(t_pause != 0):
 				time_pause = time_pause + (time.time() - t_pause)
 				t_pause = 0
-
 			try:
 				frame = dev.recv()
 			except:
@@ -236,13 +228,6 @@ def groud_data_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queu
 			#if(queue.empty() == False):
 			#	frame = queue.get()
 			#	add_frame(frame,True,1)
-
-			#frame = dev.recv()
-			#add_frame(frame,True,1)
-			if(queue.empty() == False):
-				frame = queue.get()
-				add_frame(frame,True,1)
-
 		elif(flags.value == 1):
 			if t_pause == 0:
 				t_pause = time.time()
@@ -254,7 +239,6 @@ def groud_data_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queu
 	#put_data_testing()
 
 	while(flags.value != 2):
-
 		try:
 			frame = dev.recv()
 		except:
@@ -265,12 +249,14 @@ def groud_data_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queu
 		#	frame = queue.get()
 		#	frame_t = add_frame(frame,False,2)
 
+
 		#frame = dev.recv()
 		#frame_t = add_frame(frame,False,2)
 		#time.sleep(1)
 		if(queue.empty() == False):
 			frame = queue.get()
 			frame_t = add_frame(frame,False,2)
+
 
 			
 		#if frame have category is LFCDF
@@ -286,7 +272,7 @@ def groud_data_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queu
 			
 	
 def start_task(flags,flags_comment,queue_frame_comment,frame_comment_t,queue):
-	task_data = Process(target=groud_data_task,args=(flags,flags_comment,queue_frame_comment,frame_comment_t,queue,))
+	task_data = Process(target=group_data_task,args=(flags,flags_comment,queue_frame_comment,frame_comment_t,queue,))
 	task_data.start()
 
 		
