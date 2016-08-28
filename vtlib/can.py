@@ -14,19 +14,23 @@ class CategoryType:
 
 
 class Frame(object):
-	def __init__(self, id, dlc=0, data=[], count=1, frame_type=FrameType.DataFrame,is_extended_id=False):
+	def __init__(self, id, dlc=0, data=[], count=1,frtype="S",delay=0.01,frame_type=FrameType.DataFrame,is_extended_id=False):
 		# these 2 fields must be defined before 'id' and'data', otherwise
 		# 'no attribute ' exception will be raised
 		self.is_extended_id = is_extended_id
 		self.dlc = dlc
 		self.id = id
 		self.data = data
+		self.delay = delay #delay time between frames
+		self.type = frtype #etc
 		self.frame_type = frame_type
-		self.count = count
-		self.no_data = -1
+		self.count = count #count of this frames
+		self.sibdcount = 1     #record the count of same id but data btye is different
+		self.bytechangeflag = [0,0,0,0,0,0,0,0] #change flag of the byte
+		self.bytechangecount = [0,0,0,0,0,0,0,0] #record the count of frame
 		self.time = time.time()
 		self.category = CategoryType.SDF
-		self.comment = {}
+		self.comment = []
 
 	def copy_comment(self,newcomment):
 		self.comment = dict(newcomment)
@@ -49,15 +53,6 @@ class Frame(object):
 	@time.setter
 	def time(self, value):
 		self._time = value
-
-	@property
-	def no_data(self):
-		return self._no_data
-
-	@no_data.setter
-	def no_data(self, value):
-		assert isinstance(value, int), 'id must be an integer'
-		self._no_data = value
 
 	@property
 	def count(self):
@@ -123,23 +118,34 @@ class Frame(object):
 		assert isinstance(value, int)
 		assert value >= 0 and value <= 8, 'dlc must be between 0 and 8'
 		self._dlc = value
-	#return 0:if the 2 frame not same
+
+	#return 0:if the 2 frame not same  1: 2 frames are the same 2: 2 frames have the same can id,but data is different
 	def compare(self,frame):
+		frame.bytechangeflag = [0,0,0,0,0,0,0,0]
+		bytechangeflag = 0
 		if(self.id == frame.id and self.dlc == frame.dlc):
-			for i in range(self.dlc):
-				if(self.data[i] != frame.data[i]):
-					if(self.no_data != -2):
-						frame.no_data = i
-						self.no_data = -2
-						if((frame.time - self.time) <= 6):
-							frame.category = CategoryType.HFCDF
-						else:
-							frame.category = CategoryType.LFCDF
-					return 0
-			self.count = self.count + 1
-			return 1
+			for i in range(self.dlc):				
+				if(self.data[i] != frame.data[i]):										
+					frame.bytechangeflag[i] = 1
+					if self.bytechangecount[i] >= 0:
+						bytechangeflag = 1
+						self.bytechangecount[i] += 1	
+					if((frame.time - self.time) <= 2):
+						frame.category = CategoryType.HFCDF
+					else:
+						frame.category = CategoryType.LFCDF
+
+			if bytechangeflag == 1:
+				self.sibdcount += 1
+				self.count += 1
+				return 2  #two frames ID is same, but DATA is different
+				
+			else:
+				self.count += 1
+				return 1  #two frames is same include ID & DATA
 		else:
-			return 0
+			return 0	#complete different frames
+
 	def add_comment(self,byte,c):
 		if (byte != -1):
 			s_byte = "byte%d"%byte
@@ -155,10 +161,14 @@ class Frame(object):
 			else: 
 				result = result + "\"%s\":%s,"%(c,b)
 		return result
+
 	def print_log(self):
 		result = "[{\"type\":\"%s\",\"count\":%d,\"id\":%d,\"dlc\":%d,\"data\":[%d,%d,%d,%d,%d,%d,%d,%d]}]" %("P",self.count,self.id,self.dlc,self.data[0],self.data[1],self.data[2],self.data[3],self.data[4],self.data[5],self.data[6],self.data[7])
 		return result
 
 	def __str__(self):
-		result = "{type:%s,count:%d,id:0x%X,dlc:%d,data:[0x%X,0x%X,0x%X,0x%X,0x%X,0x%X,0x%X,0x%X]}" %("P",self.count,self.id,self.dlc,self.data[0],self.data[1],self.data[2],self.data[3],self.data[4],self.data[5],self.data[6],self.data[7])
+		if self.type == "R":
+			result = "{type:%s,count:%d,\033[91mid:0x%X\033[0m,dlc:%d,data:[%X,%X,%X,%X,%X,%X,%X,%X]}"  %(self.type,self.count,self.id,self.dlc,self.data[0],self.data[1],self.data[2],self.data[3],self.data[4],self.data[5],self.data[6],self.data[7])
+		else:
+			result = "{type:%s,count:%d,id:0x%X,dlc:%d,data:[%X,%X,%X,%X,%X,%X,%X,%X]}" %(self.type,self.count,self.id,self.dlc,self.data[0],self.data[1],self.data[2],self.data[3],self.data[4],self.data[5],self.data[6],self.data[7])
 		return result
