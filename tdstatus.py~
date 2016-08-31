@@ -44,7 +44,7 @@ def recover(devq,udsentry = 0x7df):  #recover the sys to default section
 	devq.send_packet(fr)
 	
 	try:
-		recvfr = devq.get_packet(timeout=1, filter=None)
+		recvfr = devq.recv(timeout=1, filter=None)
 		if recvfr != None:
 			return True
 		else:

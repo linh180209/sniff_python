@@ -1,0 +1,94 @@
+class Packet(object):
+
+	def __init__(self):
+		pass
+
+	def validate(self,value, v_type):
+		#check id 
+		if(v_type == 0):
+			# ensure value is an integer
+			if not isinstance(value, int):
+				print 'id must be an integer'
+				exit()
+
+			# ensure standard id is in range
+			if value >= 0 and value <= 0x7FF:
+				self.id = value
+			# otherwise, check if frame is extended
+			elif self.is_extended_id and value > 0x7FF and value <= 0x1FFFFFFF:
+				self.id = value
+			# otherwise, id is not valid
+			else:
+				raise ValueError('CAN ID out of range')
+
+		#check len
+		elif(v_type == 1):
+			if not isinstance(value, int):
+				print 'len must be an interger'
+				exit()
+			
+			if not (value >= 0 and value <= 8):
+				print 'len must be between 0 and 8'
+				exit()
+
+			self.len = value
+
+		#check data
+		elif(v_type == 2):
+			# data should be a list
+			if not isinstance(value, list):
+				print 'CAN data must be a list'
+				exit()
+			
+			# data can only be 8 bytes maximum
+			if (len(value) > 8):
+				print 'CAN data cannot contain more than 8 bytes'
+				exit()
+
+			# each byte must be a valid byte, int between 0x0 and 0xFF
+			for byte in value:
+				if not isinstance(byte, int):
+					print 'CAN data must consist of bytes'
+					exit()
+				if not (byte >= 0 and byte <= 0xFF):
+					print 'CAN data must consist of bytes'
+					exit()
+			# data is valid
+			self.data = value
+
+	def get_id(self):
+		return self.id
+
+	def get_payload(self):
+		data_len = min(self.len, len(self.data))
+        	result = self.data[:data_len]
+        	result.extend([0] * (8 - data_len))
+		return result
+
+	def get_len(self):
+		return self.len
+	
+	def configure(self,id, len=0, payload=[], is_extended_id=False):
+		#set id
+		self.validate(id,0)
+		
+		#set len
+		self.validate(len,1)
+
+		#set payload
+		self.validate(payload,2)
+		
+		#set is_extended_id	
+		self.is_extended_id = is_extended_id				
+
+	def __str__(self):
+		if self.is_extended_id:
+			ext_str = 'extended'
+		else:
+			ext_str = 'standard'
+
+		result = 'Frame:'
+		result = ''.join([result,'\tID=0x%X, Length=%d, ' % (self.id, self.len)])
+		result = ''.join([result,'%s' %ext_str])
+		result = ''.join([result,'\n\tData=[0x%X,0x%X,0x%X,0x%X,0x%X,0x%X,0x%X,0x%X]' % (self.data[0],self.data[1],self.data[2],self.data[3],self.data[4],self.data[5],self.data[6],self.data[7])])
+		return result

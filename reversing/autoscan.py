@@ -1,17 +1,17 @@
 import sys
 sys.path.append("..")
-from vtlib import can 
-from vtlib.hw import vtbox
-from vtlib import vtlog
+from CanLib.CAN_Packet import *
+from CanLib.CAN_Driver import *
+from CanLib.vtlog import *
 from sys import stdout
 import random
 import math
 import time
 import argparse
 import os
-from vtlib import autoindeep
-from vtlib import autodetectcan
-from vtlib import replaylog
+from CanLib import autoindeep
+from CanLib import autodetectcan
+from CanLib import replaylog
 import bit
 
 # This program is to scan can data automatically and try to revease the data
@@ -26,18 +26,18 @@ def collectAllID(dev,totalframecount=3000,filename=None): #receive frames from d
 
 	found_ids = []	
 	vtmsgbuffer = []
-	VTlogfile = vtlog.VTlog()
+	VTlogfile = VTlog()
 	
         for i in range(0,totalframecount):   #total number can frame 
 		try:
-			fr,devstatusflag = dev.recv()
+			fr = dev.receive_driver()
 			#print fr
 		except: 
 			pass
 		if fr != None:
 			if fr.id not in found_ids:
 				print("Last ID: 0x%X; total found %d" % (fr.id,len(found_ids) + 1))
-				vtmsg = vtlog.VTMessage(fr.id,8,fr.data,1,0.01,"C","Collect ID From Bus")
+				vtmsg = VTMessage(fr.id,8,fr.get_payload(),1,0.01,"C","Collect ID From Bus")
 				vtmsgbuffer.append(vtmsg)
 	    			found_ids.append(fr.id)
 	
@@ -60,25 +60,25 @@ def reverse(dev,fridbuffer=[],fuzzframecount=200,byterange1=0,byterange2=8):
 	fuzzcomment = []
 	vtmsgbuffer = []
 	keyid = []
-	VTlogfile = vtlog.VTlog()
+	VTlogfile = VTlog()
 
 	#==========start fuzzing==================================
 
 	for i in range(0,len(fridbuffer)):
-		fr = can.Frame(fridbuffer[i],8) 		
+		fr = CAN_Packet() 		
 		for fuzzloop in range(0,fuzzframecount): #fuzz number of frame
 			for j in range(byterange1,byterange2):
 					seed = random.randint(0,255)
 					data[j] = seed
-			fr.data=data
-			dev.send(fr)
-			vtmsg = vtlog.VTMessage(fr.id,8,fr.data,1,0.01,"S","")
+			fr.configure(fridbuffer[i],8,data)
+			dev.send_driver(fr)
+			vtmsg = VTMessage(fr.id,8,fr.get_payload(),1,0.01,"S","")
 			vtmsgbuffer.append(vtmsg)
 			time.sleep(0.01)  #10ms/frame
 		print i
 		fuzzcomment = raw_input("\nCAN ID:0x%X Any affection(y or n)? if no, press Enter directly: \r\n" % (fr.id)) #if there're no affection, press Enter to continue the program directly
 		if fuzzcomment == "y":
-			vtmsgbuffer[-1]= vtlog.VTMessage(fr.id,8,fr.data,1,0.01,"K",fuzzcomment)
+			vtmsgbuffer[-1]= VTMessage(fr.id,8,fr.get_payload(),1,0.01,"K",fuzzcomment)
 			keyid.append(fr.id)
 
 	logname = VTlogfile.writelog(vtmsgbuffer)
@@ -103,7 +103,8 @@ if __name__ == "__main__":
 
 	#baudrate = autodetectcan.detect_can(sys.argv[1])
 	
-	dev = vtbox.vtboxDev(sys.argv[1],int(sys.argv[4]))	
+	dev = CANDriver(sys.argv[1],int(sys.argv[4]))
+	dev.operate(Operate.START)	
 	#dev.ser.write(baudrate)
 	
 
@@ -140,13 +141,14 @@ if __name__ == "__main__":
 
 	#replay the key frames to confirm
 
-	VTlf = vtlog.VTlog()
+	VTlf = VTlog()
 	VTMessagearray = []
 	
 	VTMessagearray	= VTlf.parselog(keylongfile)
 
 	for i in range(0,len(VTMessagearray)):
-		frame = can.Frame(VTMessagearray[i].id,VTMessagearray[i].dlc,VTMessagearray[i].data)
+		frame = CAN_Packet()
+		frame.configure(VTMessagearray[i].id,VTMessagearray[i].dlc,VTMessagearray[i].data)
 		count = VTMessagearray[i].count
 		
 		print ("%d: %s:" % (i+1,VTMessagearray[i].comment))
@@ -154,7 +156,7 @@ if __name__ == "__main__":
 
 		for n in range(0,count): 
 			
-			dev.send(frame)
+			dev.send_driver(frame)
 			time.sleep(VTMessagearray[i].delay)
 			print frame
 		c = raw_input("\nPress Enter to go ahead: \r\n")

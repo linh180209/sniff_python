@@ -3,9 +3,9 @@ sys.path.append("..")
 import random
 import math
 import time
-from vtlib import can 
-from vtlib.hw import vtbox
-from vtlib import vtlog
+from CanLib.CAN_Packet import *
+from CanLib.CAN_Driver import *
+from CanLib.vtlog import *
 
 #This function is to analyze the affection when setting different bits of can frame 
 #Example: 
@@ -42,7 +42,7 @@ def analyzebit(dev,canid,indicate1=0,indicate2=8, delay=0.01,cloudflag="local"):
 		raise ValueError('error canid')
 
 
-	VTlogfile = vtlog.VTlog()
+	VTlogfile = VTlog()
 	frbuffer = []
 	data = [0 for x in range(8)]
 	startbase = 0
@@ -64,10 +64,11 @@ def analyzebit(dev,canid,indicate1=0,indicate2=8, delay=0.01,cloudflag="local"):
 			if cloudflag == "local":
 				loop = 1
 				while(loop):
-					fr = can.Frame(canidint,8,data,1)
-					dev.send(fr)
-					dev.send(fr)
-					dev.send(fr)
+					fr = CAN_Packet()
+					fr.configure(canidint,8,data,1)
+					dev.send_driver(fr)
+					dev.send_driver(fr)
+					dev.send_driver(fr)
 					print fr
 					bitcomment = raw_input("\nrepeat?(y or n): \r\n")
 					if bitcomment == "n":
@@ -75,9 +76,9 @@ def analyzebit(dev,canid,indicate1=0,indicate2=8, delay=0.01,cloudflag="local"):
 			bitcomment = raw_input("\nimport bit? if yes, please comment the affection. if no, press Enter directly: \r\n")
 				
 			if bitcomment != "":
-				vtmsg = vtlog.VTMessage(canidint,8,data,5,delay,"S")
+				vtmsg = VTMessage(canidint,8,data,5,delay,"S")
 				frbuffer.append(vtmsg)
-				frbuffer[-1]= vtlog.VTMessage(fr.id,8,fr.data,5,0.01,"S",bitcomment)
+				frbuffer[-1]= VTMessage(fr.id,8,fr.get_payload(),5,0.01,"S",bitcomment)
 
 			c = raw_input("\nfinish the process?(y or n): \r\n")
 
@@ -93,7 +94,8 @@ def analyzebit(dev,canid,indicate1=0,indicate2=8, delay=0.01,cloudflag="local"):
 if __name__ == "__main__":
 
 	print "Usage: python bit.py <candev> <can ID> <byterange1> <byterange2> <delay time> <testing mode> <baudrate>"
-	dev = vtbox.vtboxDev(sys.argv[1],125000)
+	dev = CANDriver(sys.argv[1],125000)
+	dev.operate(Operate.START)
 
 	analyzebit(dev,sys.argv[2],int(sys.argv[3]),int(sys.argv[4]), float(sys.argv[5]),"local")	
 

@@ -1,0 +1,69 @@
+import serial
+from CAN_Packet import *
+
+class Operate:
+	START = 0
+	STOP = 1
+
+class CANDev:
+	def __init__(self, port, bit_rate):
+		self.ser = serial.Serial(port)
+		if(bit_rate == 125000):
+			self.ser.write('S0\r')
+		elif(bit_rate == 250000):
+			self.ser.write('S1\r')
+		elif(bit_rate == 500000):
+			self.ser.write('S2\r')
+		else:
+			raise ValueError("Bund rate not supported here")
+	
+	#0: start 1:stop
+	def operate(self,flag):
+		if not (flag == Operate.START or flag == Operate.STOP):
+			print 'flag must be is 0 or 1'
+			exit()
+		if(flag == Operate.START):
+			self.ser.write('O\r')
+		elif(flag == Operate.STOP):
+			self.ser.write('C\r')
+
+
+	def receive_dev(self):
+
+		# receive characters until a newline (\r) is hit
+		rx = ""
+		while (rx == "" or rx[-1] != '\r'):
+			rx = ''.join([rx,self.ser.read()])
+		
+		# get packet parameters
+		packet_id = int(rx[1:4], 16)
+
+		# get the length
+		length = int(rx[4])
+
+		# get the payloads
+		data = []
+
+		i = 0
+		while i < length:
+			data.append(int(rx[5 + i*2:7 + i*2], 16))
+			i += 1
+
+		packet = Packet()
+		packet.configure(packet_id, length, data)
+		return packet
+
+	def send_dev(self, packet):
+		# add type, id, and dlc to string
+		tx = "t%03X%d" % (packet.get_id(), packet.get_len())
+
+		# add data bytes to string
+		i = 0
+		while i < packet.get_len():
+			tx = ''.join([tx,("%02X" % packet.get_payload()[i])])
+			i += 1
+
+		# add newline (\r) to string
+		tx = ''.join([tx,'\r'])
+
+		self.ser.write(tx)

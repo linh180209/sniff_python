@@ -3,11 +3,11 @@ sys.path.append("..")
 import random
 import math
 import time
-from vtlib.utils import autodetectcan
-from vtlib import can 
-from vtlib.hw import vtbox
-from vtlib import vtlog
-from vtlib.proto.isotp import IsoTpProtocol, IsoTpMessage
+from CanLib.autodetectcan import *
+from CanLib.CAN_Packet import * 
+from CanLib.CAN_Driver import *
+from CanLib.vtlog import *
+from CanLib.CAN_protocol import *
 
 
 #This function is to Generate can frames. One is fixed length of can data. The other one is random. 
@@ -32,7 +32,7 @@ def fixedlen(dev,canid,indicate1=0,indicate2=8,framecount = 1000, delay=0.01,clo
 	except (AttributeError, ValueError):
 		raise ValueError('error canid')
 
-	VTlogfile = vtlog.VTlog()
+	VTlogfile = VTlog()
 	frbuffer = []	
 
 	for n in range(0,framecount):
@@ -40,11 +40,13 @@ def fixedlen(dev,canid,indicate1=0,indicate2=8,framecount = 1000, delay=0.01,clo
 		for i in range(indicate1,indicate2):
 				seed = random.randint(0,255)
 				data[i] = seed
-		vtmsg = vtlog.VTMessage(canidint,8,data,1,delay,"S")
+		vtmsg = VTMessage(canidint,8,data,1,delay,"S")
 		frbuffer.append(vtmsg)
+
 		if cloudflag == "local":
-			fr = can.Frame(canidint,8,data,1)
-			dev.send(fr)
+			fr = CAN_Packet()
+			fr.configure(canidint,8,data,1)
+			dev.send_driver(fr)
 			print fr
 	filename = VTlogfile.writelog(frbuffer)
 	return filename
@@ -61,27 +63,26 @@ def flexlen(dev,canid,framecount = 1000, delay=0.01,cloudflag="local"):   #len o
 	except (AttributeError, ValueError):
 		raise ValueError('error canid')
 
-	VTlogfile = vtlog.VTlog()
+	VTlogfile = VTlog()
 	frbuffer = []	
 
-	isop = IsoTpProtocol()
-	isom = IsoTpMessage(canidint)
+	isop = ISOTP_driver(dev)
 
 	for n in range(0,framecount):
 
-		isom.length = random.randint(0,255)
-		isom.data = []
-		for i in range(0,isom.length):
-			isom.data.append(random.randint(0,255))
+		length = random.randint(0,255)
+		data = []
+		for i in range(0,length):
+			data.append(random.randint(0,255))
 
 	
-		for fr in isop.generate_frames(isom):
-			vtmsg = vtlog.VTMessage(canidint,8,fr.data,1,delay,"S")
+		for fr in isop.generate_packet(canidint,length,data,Type.UDS):
+			vtmsg = VTMessage(canidint,8,fr.get_payload(),1,delay,"S")
 			frbuffer.append(vtmsg)
 			if cloudflag == "local":
 				#fr = can.Frame(canidint,8,data,1)
 				print fr
-				dev.send(fr)	
+				dev.send_driver(fr)	
 
 	filename = VTlogfile.writelog(frbuffer)
 	return filename
@@ -131,7 +132,7 @@ def regular(dev,canid,indicate1=0,indicate2=8,startbase=0x80, topcount=0xFF, low
 	
 	#print datacount,datatop,datalow
 
-	VTlogfile = vtlog.VTlog()
+	VTlogfile = VTlog()
 	frbuffer = []
 
 	if direction == "up":
@@ -140,11 +141,12 @@ def regular(dev,canid,indicate1=0,indicate2=8,startbase=0x80, topcount=0xFF, low
 			for i in range(indicate1,indicate2):
 					data[i] = datacount
 			datacount += 1
-			vtmsg = vtlog.VTMessage(canidint,8,data,1,delay,"S")
+			vtmsg = VTMessage(canidint,8,data,1,delay,"S")
 			frbuffer.append(vtmsg)
 			if cloudflag == "local":
-				fr = can.Frame(canidint,8,data,1)
-				dev.send(fr)
+				fr = CAN_Packet()
+				fr.configure(canidint,8,data,1)
+				dev.send_driver(fr)
 				print fr
 	else:
 		while datacount >= datalow:
@@ -152,11 +154,12 @@ def regular(dev,canid,indicate1=0,indicate2=8,startbase=0x80, topcount=0xFF, low
 			for i in range(indicate1,indicate2):
 					data[i] = datacount
 			datacount -= 1
-			vtmsg = vtlog.VTMessage(canidint,8,data,1,delay,"S")
+			vtmsg = VTMessage(canidint,8,data,1,delay,"S")
 			frbuffer.append(vtmsg)
 			if cloudflag == "local":
-				fr = can.Frame(canidint,8,data,1)
-				dev.send(fr)
+				fr = CAN_Packet()
+				fr.configure(canidint,8,data,1)
+				dev.send_driver(fr)
 				print fr
 
 	filename = VTlogfile.writelog(frbuffer)
@@ -167,8 +170,8 @@ def regular(dev,canid,indicate1=0,indicate2=8,startbase=0x80, topcount=0xFF, low
 if __name__ == "__main__":
 
 
-	dev = vtbox.vtboxDev(sys.argv[1],125000)
-
+	dev = CANDriver(sys.argv[1],125000)
+	dev.operate(Operate.START)
 	print "Benson mark Usage: python cangendata.py <candev> <can_id> <byterange1> <byterange2> [longlengthflag/regularflag] <frame count> <delay time>"
 	print "Generating Frames..."
 

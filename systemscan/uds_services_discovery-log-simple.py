@@ -1,10 +1,9 @@
 import sys
 sys.path.append("..")
-from vtlib.proto.isotp import IsoTpProtocol, IsoTpMessage
-from vtlib import can 
-from vtlib.hw import vtbox
-from vtlib.utils.queue import CanQueue
-from vtlib import vtlog
+from CanLib.CAN_protocol import *
+from CanLib.CAN_Packet import * 
+from CanLib.CAN_Driver import *
+from CanLib.vtlog import *
 from reversing import autoscan
 import random
 import math
@@ -93,18 +92,17 @@ def discoverdst(dev,timeout=1):
 	
 	found_ids = []	
 	vtmsgbuffer = []
-	VTlogfile = vtlog.VTlog()
+	VTlogfile = VTlog()
 	dsts = []
 	#/// comments
-	vtmsgbuffer,found_ids = autoscan.collectAllID(dev,3000)
+	vtmsgbuffer,found_ids = autoscan.collectAllID(dev,3)
 	
-	fr = can.Frame(0x00,8)  #can init
-	#/// explain the payload the corresponding service type		0x02 means valid data of this frame. 0x10 means Diagnostics Section Control services. 0x01:Enter Default Section
-	fr.data = [0x02, 0x10, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00]	
-
+	fr = CAN_Packet()
+	#/// explain the payload the corresponding service type		0x02 means valid data of this frame. 0x10 means Diagnostics Section Control services. 0x01:Enter Default Section	
+	fr.configure(0x00,8,[0x02, 0x10, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00])
 	
-	devq = CanQueue(dev)
-	devq.start()
+	devq = ISOTP_driver(dev)
+	devq.operate(Operate.START)
 	count = 0
 
 	#/// why choose 1800???  should start from 0 to 2048. for saving time, start from 1800 to test. Meanwhile, uds ID always greater than 0x700
@@ -115,28 +113,27 @@ def discoverdst(dev,timeout=1):
 		else:
 			looplen = 5
 		
-		vtmsg = vtlog.VTMessage(fr.id,8,fr.data,1,0.01,"S","scan dst ID")
+		vtmsg = VTMessage(fr.id,8,fr.get_payload(),1,0.01,"S","scan dst ID")
 		vtmsgbuffer.append(vtmsg)
 
 		print fr
-		devq.send(fr)
+		devq.send_packet(fr)
 
 		for j in range(0,looplen): #try 5 times, but if id=0x7df,set to 100
-			recvfr,devstatusflag = devq.recv2(timeout,found_ids)  #wait for response 2 seconds  only receive frames that not in found_ids						
-		
+			recvfr = devq.get_packet_filter_array(timeout,found_ids)  #wait for response 2 seconds  only receive frames that not in found_ids						
 			if recvfr != None:
 				print recvfr
-				vtmsg = vtlog.VTMessage(recvfr.id,8,recvfr.data,1,0.01,"R","Recieve Frame")
+				vtmsg = VTMessage(recvfr.id,8,recvfr.get_payload(),1,0.01,"R","Recieve Frame")
 				vtmsgbuffer.append(vtmsg)
 				#/// why 0x50-7F???    0x50 and 0x7F
-				if recvfr.data[1] in [0x50,0x7F]:
+				if recvfr.get_payload()[1] in [0x50,0x7F]:
 					count = count + 1
 					dsts.append([i,recvfr.id])
 					print "==================================="
 					commentstr = str(count)+": Request CAN ID is 0x"+str(hex(i))+"; Resp dst ID is 0x"+str(hex(recvfr.id))
 					print("%d: Request CAN ID is 0x%X; Resp dst ID is 0x%X" % (count,i,recvfr.id))
 					print "==================================="
-					vtmsgbuffer[-1]= vtlog.VTMessage(recvfr.id,8,recvfr.data,1,0.01,"K",commentstr)
+					vtmsgbuffer[-1]= VTMessage(recvfr.id,8,recvfr.get_payload(),1,0.01,"K",commentstr)
 					if fr.id != 0x7df:
 						break
 			else:
@@ -149,7 +146,7 @@ def discoverdst(dev,timeout=1):
 	print "\n\n============================================================="
 
 #=====finished, dst are stored in dsts data & file, count is number of dst===============
-	devq.stop()
+	devq.operate(Operate.STOP)
 	return dsts
 
 def discoverservices(dev,dsts=[],timeout=1):  # Scans for supported DCM services
@@ -160,13 +157,14 @@ def discoverservices(dev,dsts=[],timeout=1):  # Scans for supported DCM services
 		return None
 	#/// explain???	Init byte0 as valid length of the frame, byte1 and byte2 will get value in the below
 	datatemp = [0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
-	fr = can.Frame(0x00,8,datatemp)  #can id
+	fr = CAN_Packet()
+	fr.configure(0x00,8,datatemp)
 
 	vtmsgbuffer = []
-	VTlogfile = vtlog.VTlog()	
+	VTlogfile = VTlog()	
 
-	devq = CanQueue(dev)
-	devq.start()
+	devq = ISOTP_driver(dev)
+	devq.operate(Operate.START)
 	count = 0
 	supported_services = []
 	#/// make comments below???  
@@ -178,12 +176,12 @@ def discoverservices(dev,dsts=[],timeout=1):  # Scans for supported DCM services
 
 			devstatusflag = True
 			while devstatusflag:			
-				devq.send(fr)
+				devq.send_packet(fr)
 				print fr		
-				vtmsg = vtlog.VTMessage(fr.id,8,fr.data,1,0.01,"S","scan dst ID")
+				vtmsg = VTMessage(fr.id,8,fr.get_payload(),1,0.01,"S","scan dst ID")
 				vtmsgbuffer.append(vtmsg)
 
-				recvfr,devstatusflag = devq.recv(timeout, filter=dsts[i][1])	# only receive frames by dst 
+				recvfr,devstatusflag = devq.get_packet_2(timeout, filter=dsts[i][1])	# only receive frames by dst 
 				#print "debug mark"
 				
 				
@@ -195,29 +193,29 @@ def discoverservices(dev,dsts=[],timeout=1):  # Scans for supported DCM services
 
 				if recvfr != None:
 					print recvfr
-					vtmsg = vtlog.VTMessage(recvfr.id,8,recvfr.data,1,0.01,"R","Recieve Frame")
+					vtmsg = VTMessage(recvfr.id,8,recvfr.get_payload(),1,0.01,"R","Recieve Frame")
 					vtmsgbuffer.append(vtmsg)
-					if recvfr.data[3] not in [0x11]:	#0x11 means services not support
+					if recvfr.get_payload()[3] not in [0x11]:	#0x11 means services not support
 						count = count + 1
 						supported_services.append([dsts[i][0],dsts[i][1],j]) #record the frame. dsts[i][0] means request id, dst[i][1] means related dst, j means supported services     
-						service_name = SERVICE_NAMES.get(fr.data[1], "Unknown service") #print the services on the screen
+						service_name = SERVICE_NAMES.get(fr.get_payload()[1], "Unknown service") #print the services on the screen
 						print "==================================="
 				
-						if recvfr.data[3] in [0x33,0x35,0x7E,0x7F]:  # 0x33: 'securityAccessDenied',0x35: 'invalidKey',0x7E: 'sub-FunctionNotSupportedInActiveSession',0x7F:'serviceNotSupportedInActiveSession'
-							print("%d: %s 0x%X 0x%X %s" % (count,"Supported Services in high security level:",fr.id,fr.data[1],service_name))
+						if recvfr.get_payload()[3] in [0x33,0x35,0x7E,0x7F]:  # 0x33: 'securityAccessDenied',0x35: 'invalidKey',0x7E: 'sub-FunctionNotSupportedInActiveSession',0x7F:'serviceNotSupportedInActiveSession'
+							print("%d: %s 0x%X 0x%X %s" % (count,"Supported Services in high security level:",fr.id,fr.get_payload()[1],service_name))
 							print "==================================="
-							vtmsgbuffer[-1]= vtlog.VTMessage(recvfr.id,8,recvfr.data,1,0.01,"K",service_name)
+							vtmsgbuffer[-1]= VTMessage(recvfr.id,8,recvfr.get_payload(),1,0.01,"K",service_name)
 						else:
-							print("%d: %s 0x%X 0x%X %s" % (count,"Supported Services:",fr.id,fr.data[1],service_name))
+							print("%d: %s 0x%X 0x%X %s" % (count,"Supported Services:",fr.id,fr.get_payload()[1],service_name))
 							print "==================================="
-							vtmsgbuffer[-1]= vtlog.VTMessage(recvfr.id,8,recvfr.data,1,0.01,"K",service_name)
+							vtmsgbuffer[-1]= VTMessage(recvfr.id,8,recvfr.get_payload(),1,0.01,"K",service_name)
 	logname = VTlogfile.writelog(vtmsgbuffer)
 	print "\n\n============================================================="
 	print("\nlog file: %s" % (logname))		
 	print "\n\n============================================================="
 	print "Supported Services scan finished!"
 	print "\n\n============================================================="
-	devq.stop()
+	devq.operate(Operate.STOP)
 	return supported_services
 #/// what definitions of subfunctions???  each service has its own subfunctions  
 def discoversubfunctions(dev,supported_services=[],timeout=1):   #Scans for subfunctions of a given service.
@@ -229,13 +227,14 @@ def discoversubfunctions(dev,supported_services=[],timeout=1):   #Scans for subf
 		return None
 	#/// explain???  no meaning of datatemp here, just for init. byte0~byte7 will get data in the below
 	datatemp = [0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
-	fr = can.Frame(0x00,8,datatemp)  #can id
+	fr = CAN_Packet()
+	fr.configure(0x00,8,datatemp)
 
 	vtmsgbuffer = []
-	VTlogfile = vtlog.VTlog()
+	VTlogfile = VTlog()
 
-	devq = CanQueue(dev)
-	devq.start()
+	devq = ISOTP_driver(dev)
+	devq.operate(Operate.START)
 	count = 0
 	supported_subfunc = []
 	
@@ -256,19 +255,19 @@ def discoversubfunctions(dev,supported_services=[],timeout=1):   #Scans for subf
 					fr.data = datatemp
 					devstatusflag = True
 					while devstatusflag:
-						devq.send(fr)
+						devq.send_packet(fr)
 						print fr		
-						vtmsg = vtlog.VTMessage(fr.id,8,fr.data,1,0.01,"S","Send Frame")
+						vtmsg = VTMessage(fr.id,8,fr.get_payload(),1,0.01,"S","Send Frame")
 						vtmsgbuffer.append(vtmsg)
 
-						recvfr,devstatusflag = devq.recv(timeout, filter=supported_services[i][1])
+						recvfr,devstatusflag = devq.get_packet_2(timeout, filter=supported_services[i][1])
 						
 						
-						if recvfr != None and recvfr.data[3] == 0x78:  #wait for correct response    0x78: 'requestCorrectlyReceivedResponsePending'
+						if recvfr != None and recvfr.get_payload()[3] == 0x78:  #wait for correct response    0x78: 'requestCorrectlyReceivedResponsePending'
 							print recvfr
-							recvfr,devstatusflag = devq.recv(timeout, filter=supported_services[i][1])
+							recvfr,devstatusflag = devq.get_packet_2(timeout, filter=supported_services[i][1])
 							print recvfr
-							vtmsg = vtlog.VTMessage(recvfr.id,8,recvfr.data,1,0.01,"R","Recieve Frame")
+							vtmsg = VTMessage(recvfr.id,8,recvfr.get_payload(),1,0.01,"R","Recieve Frame")
 							vtmsgbuffer.append(vtmsg)
 
 						if devstatusflag:
@@ -278,29 +277,29 @@ def discoversubfunctions(dev,supported_services=[],timeout=1):   #Scans for subf
 				
 									#time.sleep(0.01) 
 						#/// explain???		recvfr.data[1]-0x40 == datatemp[1] means node comfirm it supoort this subfunction.  recvfr.data[1]==0x7f means node support the subfunction but have errors
-						if recvfr != None and recvfr.data[3] != 0x13:  #0x13:incorrectMessageLengthOrInvalidFormat
+						if recvfr != None and recvfr.get_payload()[3] != 0x13:  #0x13:incorrectMessageLengthOrInvalidFormat
 							print recvfr
-							vtmsg = vtlog.VTMessage(recvfr.id,8,recvfr.data,1,0.01,"R","Recieve Frame")
+							vtmsg = VTMessage(recvfr.id,8,recvfr.get_payload(),1,0.01,"R","Recieve Frame")
 							vtmsgbuffer.append(vtmsg)
 
-							if recvfr.data[1]-0x40 == datatemp[1] or (recvfr.data[1]==0x7f and recvfr.data[3] not in [0x11,0x12,0x31,0x78]):
+							if recvfr.get_payload()[1]-0x40 == datatemp[1] or (recvfr.get_payload()[1]==0x7f and recvfr.data[3] not in [0x11,0x12,0x31,0x78]):
 								count = count + 1
 								supported_subfunc.append([supported_services[i],datatemp[2],datatemp[3]])
-								service_name = SERVICE_NAMES.get(fr.data[1], "Unknown service")
-								if recvfr.data[3] in [0x33,0x35,0x7E,0x7F]:	
+								service_name = SERVICE_NAMES.get(fr.get_payload()[1], "Unknown service")
+								if recvfr.get_payload()[3] in [0x33,0x35,0x7E,0x7F]:	
 									print "==================================="
 									print("%d: 0x%X %s 0x%X 0x%X %s: 0x%X 0x%X" % (count,fr.id,"Supported subfunctions of Services in high security level",datatemp[0],datatemp[1],service_name, datatemp[2],datatemp[3]))
 									print "==================================="	
-									vtmsgbuffer[-1]= vtlog.VTMessage(recvfr.id,8,recvfr.data,1,0.01,"K",service_name)						
+									vtmsgbuffer[-1]= VTMessage(recvfr.id,8,recvfr.get_payload(),1,0.01,"K",service_name)						
 						
-								elif recvfr.data[0] > 0x07:  #Node response long length data
+								elif recvfr.get_payload()[0] > 0x07:  #Node response long length data
 									print("%d: 0x%X %s 0x%X 0x%X %s: 0x%X 0x%X" % (count,fr.id,"get data stream",datatemp[0],datatemp[1],service_name,datatemp[2],datatemp[3]))
 									print "==================================="
 									time.sleep(0.5)
 								else:
 									print "==================================="
 									print("%d: 0x%X %s 0x%X 0x%X %s: 0x%X 0x%X" % (count,fr.id,"Supported subfunctions of Services",datatemp[0],datatemp[1],service_name,datatemp[2],datatemp[3]))
-									vtmsgbuffer[-1]= vtlog.VTMessage(recvfr.id,8,recvfr.data,1,0.01,"K",service_name)
+									vtmsgbuffer[-1]= VTMessage(recvfr.id,8,recvfr.get_payload(),1,0.01,"K",service_name)
 									print "==================================="
 								
 								
@@ -320,7 +319,7 @@ def discoversubfunctions(dev,supported_services=[],timeout=1):   #Scans for subf
 
 	print "\n\n============================================================="
 	print "Supported Subfunctions of Services scan finished!"
-	devq.stop()
+	devq.operate(Operate.STOP)
 	return supported_subfunc
 
 
@@ -333,7 +332,8 @@ if __name__ == "__main__":
 	supported_subfunc = []
 	
 	
-	dev = vtbox.vtboxDev(sys.argv[1],int(sys.argv[2]))
+	dev = CANDriver(sys.argv[1],int(sys.argv[2]))
+	dev.operate(Operate.START)
 
 	dsts = discoverdst(dev,float(sys.argv[3]))	
 
@@ -342,7 +342,7 @@ if __name__ == "__main__":
 	#supported_services = [[1956, 1964, 16], [1956, 1964, 17], [1956, 1964, 20], [1956, 1964, 25], [1956, 1964, 34], [1956, 1964, 39], [1956, 1964, 40], [1956, 1964, 46], [1956, 1964, 47], [1956, 1964, 49], [1956, 1964, 62], [1956, 1964, 133], [2015, 1964, 16], [2015, 1964, 17], [2015, 1964, 20], [2015, 1964, 25], [2015, 1964, 34], [2015, 1964, 39], [2015, 1964, 40], [2015, 1964, 46], [2015, 1964, 47], [2015, 1964, 49], [2015, 1964, 62], [2015, 1964, 133]]
 
 	supported_subfunc = discoversubfunctions(dev,supported_services,float(sys.argv[3]))
-	print dsts,supported_services supported_subfunc
+	print dsts,supported_services,supported_subfunc
 
 	exit()
 

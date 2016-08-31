@@ -4,8 +4,8 @@ import random
 import math
 import time
 import cangendata
-from vtlib import can 
-from vtlib.hw import vtbox
+from CanLib.CAN_Packet import * 
+from CanLib.CAN_Driver import *
 
 #This function is to Generate random fuzzing can frames(include id and data). 
 #Example: 
@@ -14,7 +14,8 @@ from vtlib.hw import vtbox
 
 if __name__ == "__main__":
 
-	dev = vtbox.vtboxDev(sys.argv[1],125000)
+	dev = CANDriver(sys.argv[1],125000)
+	dev.operate(Operate.START)
 	print "Benson mark Usage: python fuzzran.py <candev> <byterange1> <byterange2> <framecount> <delay time>"
 
 	

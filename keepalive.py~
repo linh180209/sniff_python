@@ -63,7 +63,6 @@ if __name__ == "__main__":
 		c = raw_input("Still sending frames to the bus, stop the process? (y or n)")
 		if(c == 'y'):
 			feedstop(taskname)
-			devq.operate(Operate.STOP)
 			print '========EXIT========'
 			exit()
 	

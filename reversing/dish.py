@@ -3,9 +3,9 @@ sys.path.append("..")
 import random
 import math
 import time
-import cangendata
-from vtlib import can 
-from vtlib.hw import vtbox
+from fuzzing import cangendata
+from CanLib.CAN_Packet import *
+from CanLib.CAN_Driver import *
 
 #This function is to dish system via can frames
 #Example: 
@@ -50,8 +50,8 @@ def analyzebyte(dev,canid,indicate1=0,indicate2=8, delay=0.01,cloudflag="local")
 if __name__ == "__main__":
 
 	print "Usage: python dish.py <candev> <can ID> <byterange1> <byterange2> <delay time> <testing mode>"
-	dev = vtbox.vtboxDev(sys.argv[1],125000)
-
+	dev = CANDriver(sys.argv[1],125000)
+	dev.operate(Operate.START)
 	analyzebyte(dev,sys.argv[2],int(sys.argv[3]),int(sys.argv[4]), float(sys.argv[5]),"local")	
 
 	print "Finish dish!"

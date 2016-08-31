@@ -1,9 +1,9 @@
 import os
 import sys
 sys.path.append("..")
-from vtlib.hw.vtbox import vtboxDev
-from vtlib import vtlog
-from vtlib import can
+from CanLib.CAN_Driver import *
+from CanLib.vtlog import *
+from CanLib.CAN_Packet import *
 import time
 
 #This function is to Generate flooding can frames. 
@@ -24,16 +24,17 @@ def start(self,dev,filename = None,doscount = 1000, delay=0.1):  #no need this f
 		filename = FILEPATH + '/logfolder/'+ filename
 		dev.sendframesfromfile(dev,filename)
 	else:
-		VTlogfile = vtlog.VTlog()
+		VTlogfile = VTlog()
 		frbuffer = []
 
 		data = [0 for x in range(8)]
-		fr = can.Frame(0xBE,8,data)	
+		fr = CAN_Packet()
+		fr.configure(0xBE,8,data)
 		for i in range(0,doscount):
-			dev.send(fr)
+			dev.send_driver(fr)
 			print fr
 			time.sleep(delay)
-			vtmsg = vtlog.VTMessage(0xBE,8,data,1,delay,"S")				
+			vtmsg = VTMessage(0xBE,8,data,1,delay,"S")				
 			frbuffer.append(vtmsg)
 		VTlogfile.writelog(frbuffer)
 
@@ -48,8 +49,9 @@ if __name__ == "__main__":
 	else:
 		name_devices = sys.argv[1]
 
-	dev = vtboxDev(sys.argv[1],125000)
-	
+	dev = CANDriver(sys.argv[1],125000)
+	dev.operate(Operate.START)
+
 	if(sys.argv[2][-4:] == "json"):	# send frames from log file  
 		start(None,dev,sys.argv[2])
 	else:
