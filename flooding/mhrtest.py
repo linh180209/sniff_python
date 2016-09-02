@@ -40,6 +40,9 @@ if __name__ == "__main__":
 	
 	print "Usage: sudo python dosflood.py <candev> <baudrate> <canframe count> <time delay> <DEST ID> <SID>\n"	
 
+	for i in range(1,6):
+		print i,sys.argv[i]
+
 	dev = CANDriver(sys.argv[1],125000)
 	devq = ISOTP_driver(dev)
 	devq.operate(Operate.START)
