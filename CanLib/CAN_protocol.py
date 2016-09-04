@@ -60,53 +60,62 @@ class ISOTP_driver(object):
 	def send_packet(self,packet):
 		self.queue_send.put(packet)
 
+	#def get_packet(self, timeout=1, filter=None):
+	#	try:
+	#		s_time = time.time()
+	#		while True:
+	#			if time.time() - s_time > timeout:
+	#				return None
+	#			packet = self.queue_recv.get(timeout=timeout)
+	#			if not filter:
+	#				return packet
+	#			elif filter == packet.get_id():
+	#				return packet
+	#	except queue.Empty:
+	#		return None
+	
 	def get_packet(self, timeout=1, filter=None):
 		try:
-			s_time = time.time()
+			start_time = time.time()
 			while True:
-				if time.time() - s_time > timeout:
-					return None
-				packet = self.queue_recv.get(timeout=timeout)
+				msg,devstatusflag = self.queue_recv.get(timeout=timeout)
+				print '0x%X'%msg.get_id()
+				if msg == None:
+					return None,False
 				if not filter:
-					return packet
-				elif filter == packet.get_id():
-					return packet
-		except queue.Empty:
-			return None
-	
-	def get_packet_2(self, timeout=1, filter=None):
-		try:
-		    start_time = time.time()
-		    while True:
-		        msg, devstatusflag= self.queue_recv.get(timeout=timeout)
-			if msg == None:
-				return None,False
-		        if not filter:
-		            return msg,True
-		        elif filter == msg.id:
-		            return msg,True
-			elif devstatusflag == False:
-			    return None,False
-		        # ensure we haven't gone over the timeout
-		        if time.time() - start_time > timeout:
-		            return None,True
+					return msg,True
+				elif filter == msg.get_id():
+					return msg,True
+				elif devstatusflag == False:
+					return None,False
+				# ensure we haven't gone over the timeout
+				if time.time() - start_time > timeout:
+					return None,True
 
 		except queue.Empty:
 		    return None,True
 
 	def get_packet_filter_array(self, timeout=1, filterarray=[]):
 		try:
-			s_time = time.time()
+			start_time = time.time()
 			while True:
-				if time.time() - s_time > timeout:
-					return None
-				packet = self.queue_recv.get(timeout=timeout)
-				if not filter:
-					return packet
-				elif packet.get_id() in filterarray:
-					return packet
+				msg, devstatusflag = self.queue_recv.get(timeout=timeout)
+
+				if msg == None:
+					return None,False
+				#print msg
+				if not filterarray:
+					return msg,True
+				elif msg.id not in filterarray:
+					return msg,True
+				elif devstatusflag == False:
+					return None,False
+				# ensure we haven't gone over the timeout
+				if time.time() - start_time > timeout:
+					return None,True
+
 		except queue.Empty:
-			return None
+				return None,True
 
 
 	def generate_OBD(self,id_ms,length_ms,data_ms):
@@ -283,7 +292,7 @@ class ISOTP_driver(object):
 			self.queue_send.put(packet_request)
 			
 			#receive reponse message
-			response = self.get_packet(timeout,ecu_id + 0x20)
+			response,flag = self.get_packet(timeout,ecu_id + 0x20)
 			
 			if(response != None):
 				return self.parse_packet(response)
@@ -301,7 +310,7 @@ class ISOTP_driver(object):
 
 			start_ts = time.time()
         		while result == None:
-				response = self.get_packet(filter=ecu_id + 0x20)
+				response,flag = self.get_packet(filter=ecu_id + 0x20)
 				if response:
 					result = self.parse_packet(response)
 				if time.time() - start_ts > timeout:

@@ -25,7 +25,6 @@ def start(self,dev,filename = None,replayflag = "", delay=0.01):  #no need this 
 		dev.sendframesfromfile(dev,filename)
 
 
-
 if __name__ == "__main__":
 	
 	print "Usage: sudo python replaylog.py candev filename baudrate"	

@@ -2,7 +2,7 @@ import sys
 sys.path.append("..")
 from CanLib.CAN_Packet import *
 from CanLib.CAN_Driver import *
-from CanLib.vtlog import *
+from CanLib.CAN_Socket import *
 from sys import stdout
 import random
 import math

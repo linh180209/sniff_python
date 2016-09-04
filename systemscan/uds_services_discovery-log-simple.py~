@@ -3,7 +3,7 @@ sys.path.append("..")
 from CanLib.CAN_protocol import *
 from CanLib.CAN_Packet import * 
 from CanLib.CAN_Driver import *
-from CanLib.vtlog import *
+from CanLib.CAN_Socket import *
 from reversing import autoscan
 import random
 import math
@@ -92,7 +92,7 @@ def discoverdst(dev,timeout=1):
 	
 	found_ids = []	
 	vtmsgbuffer = []
-	VTlogfile = VTlog()
+	VTlogfile = CANSocket()
 	dsts = []
 	#/// comments
 	vtmsgbuffer,found_ids = autoscan.collectAllID(dev,3)
@@ -120,8 +120,7 @@ def discoverdst(dev,timeout=1):
 		devq.send_packet(fr)
 
 		for j in range(0,looplen): #try 5 times, but if id=0x7df,set to 100
-			recvfr = devq.get_packet_filter_array(timeout,found_ids)  #wait for response 2 seconds  only receive frames that not in found_ids						
-			r,d = devq.get_packet_2(timeout, None)
+			recvfr,flag = devq.get_packet_filter_array(timeout,found_ids)  #wait for response 2 seconds  only receive frames that not in found_ids						
 			if recvfr != None:
 				print recvfr
 				vtmsg = VTMessage(recvfr.id,8,recvfr.get_payload(),1,0.01,"R","Recieve Frame")
@@ -162,7 +161,7 @@ def discoverservices(dev,dsts=[],timeout=1):  # Scans for supported DCM services
 	fr.configure(0x00,8,datatemp)
 
 	vtmsgbuffer = []
-	VTlogfile = VTlog()	
+	VTlogfile = CANSocket()	
 
 	devq = ISOTP_driver(dev)
 	devq.operate(Operate.START)
@@ -182,7 +181,7 @@ def discoverservices(dev,dsts=[],timeout=1):  # Scans for supported DCM services
 				vtmsg = VTMessage(fr.id,8,fr.get_payload(),1,0.01,"S","scan dst ID")
 				vtmsgbuffer.append(vtmsg)
 
-				recvfr,devstatusflag = devq.get_packet_2(timeout, filter=dsts[i][1])	# only receive frames by dst 
+				recvfr,devstatusflag = devq.get_packet(timeout, filter=dsts[i][1])	# only receive frames by dst 
 				#print "debug mark"
 				
 				
@@ -232,7 +231,7 @@ def discoversubfunctions(dev,supported_services=[],timeout=1):   #Scans for subf
 	fr.configure(0x00,8,datatemp)
 
 	vtmsgbuffer = []
-	VTlogfile = VTlog()
+	VTlogfile = CANSocket()
 
 	devq = ISOTP_driver(dev)
 	devq.operate(Operate.START)
@@ -261,12 +260,12 @@ def discoversubfunctions(dev,supported_services=[],timeout=1):   #Scans for subf
 						vtmsg = VTMessage(fr.id,8,fr.get_payload(),1,0.01,"S","Send Frame")
 						vtmsgbuffer.append(vtmsg)
 
-						recvfr,devstatusflag = devq.get_packet_2(timeout, filter=supported_services[i][1])
+						recvfr,devstatusflag = devq.get_packet(timeout, filter=supported_services[i][1])
 						
 						
 						if recvfr != None and recvfr.get_payload()[3] == 0x78:  #wait for correct response    0x78: 'requestCorrectlyReceivedResponsePending'
 							print recvfr
-							recvfr,devstatusflag = devq.get_packet_2(timeout, filter=supported_services[i][1])
+							recvfr,devstatusflag = devq.get_packet(timeout, filter=supported_services[i][1])
 							print recvfr
 							vtmsg = VTMessage(recvfr.id,8,recvfr.get_payload(),1,0.01,"R","Recieve Frame")
 							vtmsgbuffer.append(vtmsg)

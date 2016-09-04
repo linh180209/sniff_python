@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.append("..")
 from CAN_Driver import *
-from vtlog import *
+from CAN_Socket import *
 from CAN_Packet import *
 
 #This function is to replay can frame log(jason format). 

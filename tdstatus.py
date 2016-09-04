@@ -21,13 +21,13 @@ def check(devq,udsentry = 0x7df):   #devq is object of can queue
 
 	for loog in range(0,4):  #try 3 times
 		try:
-			recvfr = devq.get_packet(timeout=1, filter=None)
+			recvfr,flag = devq.get_packet(timeout=1, filter=None)
 			if recvfr != None:
 				statusflag = 1
 			else:
 				devq.send_packet(fr)
 				devq.send_packet(fr)
-				recvfr = devq.get_packet(timeout=1, filter=None)
+				recvfr,flag = devq.get_packet(timeout=1, filter=None)
 				if recvfr != None:
 					statusflag = 1			
 		except:
@@ -44,7 +44,7 @@ def recover(devq,udsentry = 0x7df):  #recover the sys to default section
 	devq.send_packet(fr)
 	
 	try:
-		recvfr = devq.get_packet(timeout=1, filter=None)
+		recvfr,flag = devq.get_packet(timeout=1, filter=None)
 		if recvfr != None:
 			return True
 		else:

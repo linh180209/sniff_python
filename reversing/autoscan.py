@@ -2,7 +2,7 @@ import sys
 sys.path.append("..")
 from CanLib.CAN_Packet import *
 from CanLib.CAN_Driver import *
-from CanLib.vtlog import *
+from CanLib.CAN_Socket import *
 from sys import stdout
 import random
 import math
@@ -26,7 +26,7 @@ def collectAllID(dev,totalframecount=3000,filename=None): #receive frames from d
 
 	found_ids = []	
 	vtmsgbuffer = []
-	VTlogfile = VTlog()
+	VTlogfile = CANSocket()
 	
         for i in range(0,totalframecount):   #total number can frame 
 		try:
@@ -60,7 +60,7 @@ def reverse(dev,fridbuffer=[],fuzzframecount=200,byterange1=0,byterange2=8):
 	fuzzcomment = []
 	vtmsgbuffer = []
 	keyid = []
-	VTlogfile = VTlog()
+	VTlogfile = CANSocket()
 
 	#==========start fuzzing==================================
 
@@ -141,7 +141,7 @@ if __name__ == "__main__":
 
 	#replay the key frames to confirm
 
-	VTlf = VTlog()
+	VTlf = CANSocket()
 	VTMessagearray = []
 	
 	VTMessagearray	= VTlf.parselog(keylongfile)

@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.append("..")
 from CanLib.CAN_Driver import *
-from CanLib.vtlog import *
+from CanLib.CAN_Socket import *
 from CanLib.CAN_Packet import *
 import time
 
@@ -51,6 +51,7 @@ if __name__ == "__main__":
 
 	dev = CANDriver(sys.argv[1],125000)
 	dev.operate(Operate.START)
+
 	if(sys.argv[2][-4:] == "json"):	# send frames from log file  
 		start(None,dev,sys.argv[2])
 	else:

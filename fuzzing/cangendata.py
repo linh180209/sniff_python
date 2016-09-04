@@ -6,7 +6,7 @@ import time
 from CanLib.autodetectcan import *
 from CanLib.CAN_Packet import * 
 from CanLib.CAN_Driver import *
-from CanLib.vtlog import *
+from CanLib.CAN_Socket import *
 from CanLib.CAN_protocol import *
 
 
@@ -32,7 +32,7 @@ def fixedlen(dev,canid,indicate1=0,indicate2=8,framecount = 1000, delay=0.01,clo
 	except (AttributeError, ValueError):
 		raise ValueError('error canid')
 
-	VTlogfile = VTlog()
+	VTlogfile = CANSocket()
 	frbuffer = []	
 
 	for n in range(0,framecount):
@@ -63,7 +63,7 @@ def flexlen(dev,canid,framecount = 1000, delay=0.01,cloudflag="local"):   #len o
 	except (AttributeError, ValueError):
 		raise ValueError('error canid')
 
-	VTlogfile = VTlog()
+	VTlogfile = CANSocket()
 	frbuffer = []	
 
 	isop = ISOTP_driver(dev)
@@ -132,7 +132,7 @@ def regular(dev,canid,indicate1=0,indicate2=8,startbase=0x80, topcount=0xFF, low
 	
 	#print datacount,datatop,datalow
 
-	VTlogfile = VTlog()
+	VTlogfile = CANSocket()
 	frbuffer = []
 
 	if direction == "up":

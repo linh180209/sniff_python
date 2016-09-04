@@ -1,6 +1,6 @@
 import serial
 from CAN_Packet import *
-from vtlog import *
+from CAN_Socket import *
 
 class Operate:
 	START = 0
@@ -67,15 +67,17 @@ class CANDriver:
 				i += 1
 
 			packet = CAN_Packet()
-			packet.configure(packet_id, length, data)
-			return packet
+			packet.configure(packet_id, length, data,frtype='R')
+	
 		except:
 			
 			self.operate(Operate.STOP)
 			time.sleep(0.5)		
 			self.set_bitrate(self.bitrate)
 			self.operate(Operate.START)
-			return None
+			return None,False
+
+		return packet,True	
 
 	def send_driver(self, packet):
 		# add type, id, and dlc to string
@@ -93,7 +95,7 @@ class CANDriver:
 		self.ser.write(tx)
 
 	def sendframesfromfile(self,dev,filename):
-		VTlf = VTlog()
+		VTlf = CANSocket()
 		VTMessagearray = []
 		VTMessagearray	= VTlf.parselog(filename)
 
@@ -109,7 +111,7 @@ class CANDriver:
         	return True
 
 	def sendframesfromfile1b1(self,dev,filename):
-		VTlf = VTlog()
+		VTlf = CANSocket()
 		VTMessagearray = []
 	
 		VTMessagearray	= VTlf.parselog(filename)

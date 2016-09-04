@@ -1,7 +1,7 @@
 import sys
 from CAN_Packet import *
 from CAN_Driver import *
-from vtlog import *
+from CAN_Socket import *
 import random
 import math
 import time
@@ -43,7 +43,7 @@ def analyzebytes(dev,keyidarray):
 			##########
 			print vtmsgbuffer[-1]
 
-		debugflag = 1
+		debugflag = 0
 	
 		if debugflag:
 			print "\nStep 2: "

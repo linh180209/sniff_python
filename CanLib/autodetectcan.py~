@@ -10,32 +10,32 @@ import time
 
 def detect_can(can_dev):  # dev is object of vtbox dev 
 
-	dev = CANDriver(can_dev,125000)
-	devq = ISOTP_driver(dev)
-	devq.operate(Operate.START)
+	box = CANDriver(can_dev,125000)
+	boxq = ISOTP_driver(box)
+	boxq.operate(Operate.START)
 
 	i = 4
 	j = 0
 	loop =0
 	detected = 0
 	data = [0 for x in range(8)]
-	fr = CAN_Packet()  
+	fr = CAN_Packet()
 	fr.configure(0x00,8,data) #can id
 
 	baudset = 'S'+str(i)+'\r'
 
 	while True:
-		dev.operate(Operate.STOP)
-		dev.ser.write(baudset)
-		dev.operate(Operate.START)
+		box.operate(Operate.STOP)
+		box.ser.write(baudset)
+		box.operate(Operate.START)
 		if i in [4,6]:
 			loop = 4
 		else:
 			loop = 2
 		for j in range(0,loop):
-			devq.send_packet(fr)
+			boxq.send_packet(fr)
 			try:
-				recvfr = devq.get_packet(timeout=0.5, filter=None)
+				recvfr,flag = boxq.get_packet(timeout=0.5, filter=None)
 				if (recvfr != None):
 					print "Detected CAN Bus baudrate successfully!"
 
@@ -73,7 +73,7 @@ def detect_can(can_dev):  # dev is object of vtbox dev
 			i = 0	
 
 		if detected:
-			dev.operate(Operate.STOP)
+			box.operate(Operate.STOP)
 			return baudrate
 
 		baudset = 'S'+str(i)+'\r'

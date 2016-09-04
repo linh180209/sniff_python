@@ -30,7 +30,7 @@ def start(self,dev,logtime=5):  #no need this function, we can put sys argv as i
 	while((time.time()-start_time) < logtime):		
 		packet = None
 		while(packet == None):
-			packet =  devq.get_packet()	
+			packet,flag =  devq.get_packet()	
 		logdataobj.append(packet)	
 	logname = VTlogfile.logfrarray2file(VTlogfile,logdataobj,"P","Log Frames")
 	devq.operate(Operate.STOP)

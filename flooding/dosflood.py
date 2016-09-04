@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.append("..")
 from CanLib.CAN_Driver import *
-from CanLib.vtlog import *
+from CanLib.CAN_Socket import *
 from CanLib.CAN_Packet import *
 import time
 
@@ -24,7 +24,7 @@ def start(self,dev,filename = None,doscount = 1000, delay=0.1):  #no need this f
 		filename = FILEPATH + '/logfolder/'+ filename
 		dev.sendframesfromfile(dev,filename)
 	else:
-		VTlogfile = VTlog()
+		VTlogfile = CANSocket()
 		frbuffer = []
 
 		data = [0 for x in range(8)]
