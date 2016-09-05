@@ -2,7 +2,7 @@ import sys
 sys.path.append("..")
 from CanLib.CAN_Packet import *
 from CanLib.CAN_Driver import *
-from CanLib.CAN_Socket import *
+from CanLib.vtlog import *
 from sys import stdout
 import random
 import math
@@ -103,7 +103,7 @@ if __name__ == "__main__":
 
 	#baudrate = autodetectcan.detect_can(sys.argv[1])
 	
-	dev = CANDriver(sys.argv[1],int(sys.argv[4]))
+	dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=int(sys.argv[4]))
 	dev.operate(Operate.START)	
 	#dev.ser.write(baudrate)
 	

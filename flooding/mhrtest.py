@@ -44,7 +44,7 @@ if __name__ == "__main__":
 	
 	print "Usage: sudo python dosflood.py <candev> <baudrate> <canframe count> <time delay> <DEST ID> <SID>\n"	
 
-	dev = CANDriver(sys.argv[1],125000)
+	dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=125000)
 	devq = ISOTP_driver(dev)
 	devq.operate(Operate.START)
 

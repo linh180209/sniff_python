@@ -3,7 +3,7 @@ import sys
 import time
 sys.path.append("..")
 from CAN_Driver import *
-from CAN_Socket import *
+from vtlog import *
 from CAN_protocol import *
 from CAN_Packet import *
 
@@ -22,7 +22,7 @@ def start(self,dev,logtime=5):  #no need this function, we can put sys argv as i
 	#devq = CanQueue(dev)
 	devq = ISOTP_driver(dev)
 	devq.operate(Operate.START)
-	VTlogfile = CANSocket()	
+	VTlogfile = VTlog()	
 	start_time = time.time()
 	print "Start Logging data..."
 
@@ -30,7 +30,8 @@ def start(self,dev,logtime=5):  #no need this function, we can put sys argv as i
 	while((time.time()-start_time) < logtime):		
 		packet = None
 		while(packet == None):
-			packet,flag =  devq.get_packet()	
+			packet,flag =  devq.get_packet()
+			print packet	
 		logdataobj.append(packet)	
 	logname = VTlogfile.logfrarray2file(VTlogfile,logdataobj,"P","Log Frames")
 	devq.operate(Operate.STOP)
@@ -52,7 +53,7 @@ if __name__ == "__main__":
 	else:
 		name_devices = sys.argv[1]
 
-	dev = CANDriver(sys.argv[1],int(sys.argv[2]))
+	dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=int(sys.argv[2]))
 	
 	start(None,dev,int(sys.argv[3]))
 

@@ -1,7 +1,7 @@
 import sys
 from CAN_Packet import *
 from CAN_Driver import *
-from CAN_Socket import *
+from vtlog import *
 import random
 import math
 import time
@@ -16,7 +16,7 @@ def analyzebytes(dev,keyidarray):
 
 	for n in range(0,len(keyidarray)):
 		
-		VTlogfile = CANSocket()
+		VTlogfile = VTlog()
 		vtmsgbuffer = []
 		data = [0 for x in range(8)]
 		fr = CAN_Packet()  

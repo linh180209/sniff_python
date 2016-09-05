@@ -10,7 +10,7 @@ import time
 
 def detect_can(can_dev):  # dev is object of vtbox dev 
 
-	box = CANDriver(can_dev,125000)
+	box = CANDriver(TypeCan.SERIAL,port=can_dev,bit_rate=125000)
 	boxq = ISOTP_driver(box)
 	boxq.operate(Operate.START)
 

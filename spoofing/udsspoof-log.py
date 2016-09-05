@@ -8,7 +8,7 @@ import select
 import string
 from const import *
 from CanLib.CAN_Driver import *
-from CanLib.CAN_Socket import *
+from CanLib.vtlog import *
 from CanLib.CAN_Packet import *
 
 
@@ -1217,7 +1217,7 @@ if __name__ == "__main__":
 
 	timeout = 1.02 #20ms
 	#dev = CantactDev(sys.argv[1],timeout)
-	dev = CANDriver(can_name,int(sys.argv[2]))
+	dev = CANDriver(TypeCan.SERIAL,port=can_name,bit_rate=int(sys.argv[2]))
 	dev.operate(Operate.START)
 
 	start_tv = time.time()
@@ -1231,7 +1231,7 @@ if __name__ == "__main__":
 	dev.send_driver(frame)
 	count = 0
 
-	VTlogfile = CANSocket()
+	VTlogfile = VTlog()
 
 	while((time.time()-start_tv) < 3*60):
 		print count

@@ -6,7 +6,7 @@ import time
 from CanLib.autodetectcan import *
 from CanLib.CAN_Packet import * 
 from CanLib.CAN_Driver import *
-from CanLib.CAN_Socket import *
+from CanLib.vtlog import *
 from CanLib.CAN_protocol import *
 
 
@@ -32,7 +32,7 @@ def fixedlen(dev,canid,indicate1=0,indicate2=8,framecount = 1000, delay=0.01,clo
 	except (AttributeError, ValueError):
 		raise ValueError('error canid')
 
-	VTlogfile = CANSocket()
+	VTlogfile = VTlog()
 	frbuffer = []	
 
 	for n in range(0,framecount):
@@ -63,7 +63,7 @@ def flexlen(dev,canid,framecount = 1000, delay=0.01,cloudflag="local"):   #len o
 	except (AttributeError, ValueError):
 		raise ValueError('error canid')
 
-	VTlogfile = CANSocket()
+	VTlogfile = VTlog()
 	frbuffer = []	
 
 	isop = ISOTP_driver(dev)
@@ -132,7 +132,7 @@ def regular(dev,canid,indicate1=0,indicate2=8,startbase=0x80, topcount=0xFF, low
 	
 	#print datacount,datatop,datalow
 
-	VTlogfile = CANSocket()
+	VTlogfile = VTlog()
 	frbuffer = []
 
 	if direction == "up":
@@ -170,7 +170,7 @@ def regular(dev,canid,indicate1=0,indicate2=8,startbase=0x80, topcount=0xFF, low
 if __name__ == "__main__":
 
 
-	dev = CANDriver(sys.argv[1],125000)
+	dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=125000)
 	dev.operate(Operate.START)
 	print "Benson mark Usage: python cangendata.py <candev> <can_id> <byterange1> <byterange2> [longlengthflag/regularflag] <frame count> <delay time>"
 	print "Generating Frames..."

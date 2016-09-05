@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.append("..")
 from CanLib.CAN_Driver import *
-from CanLib.CAN_Socket import *
+from CanLib.vtlog import *
 from CanLib.CAN_Packet import *
 import time
 
@@ -24,7 +24,7 @@ def start(self,dev,filename = None,doscount = 1000, delay=0.1):  #no need this f
 		filename = FILEPATH + '/logfolder/'+ filename
 		dev.sendframesfromfile(dev,filename)
 	else:
-		VTlogfile = CANSocket()
+		VTlogfile = VTlog()
 		frbuffer = []
 
 		data = [0 for x in range(8)]
@@ -49,7 +49,7 @@ if __name__ == "__main__":
 	else:
 		name_devices = sys.argv[1]
 
-	dev = CANDriver(sys.argv[1],125000)
+	dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=125000)
 	dev.operate(Operate.START)
 
 	if(sys.argv[2][-4:] == "json"):	# send frames from log file  

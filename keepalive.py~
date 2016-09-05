@@ -51,7 +51,7 @@ if __name__ == "__main__":
 		print 'You must specify one can device and Request ID'
 		exit(1)
 
-	dev = CANDriver(sys.argv[1],int(sys.argv[3]))
+	dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=int(sys.argv[3]))
 	devq = ISOTP_driver(dev)
 	devq.operate(Operate.START)
 		
@@ -63,6 +63,7 @@ if __name__ == "__main__":
 		c = raw_input("Still sending frames to the bus, stop the process? (y or n)")
 		if(c == 'y'):
 			feedstop(taskname)
+			devq.operate(Operate.STOP)
 			print '========EXIT========'
 			exit()
 	

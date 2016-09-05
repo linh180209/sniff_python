@@ -2,7 +2,7 @@ import sys
 sys.path.append("..")
 from CanLib.CAN_Packet import *
 from CanLib.CAN_Driver import *
-from CanLib.CAN_Socket import *
+from CanLib.vtlog import *
 import time
 import os
 import shutil
@@ -204,7 +204,7 @@ def logfrarray2file(array_f,frtype = "P",frcomment = ""):
 
 	#Record broudgroud frames of testing bus
 	vtmsgbuffer = []
-	VTlogfile = CANSocket()
+	VTlogfile = VTlog()
 
 	for i in range(len(array_f)):
 		vtmsg = VTMessage(array_f[i].id,8,array_f[i].get_payload(),array_f[i].count,0.01,frtype,frcomment)
@@ -219,7 +219,7 @@ def logfrarray2file(array_f,frtype = "P",frcomment = ""):
 def replayarray1b1(frarray=[]):
 
 	vtmsgbuffer = []
-	VTlogfile = CANSocket()
+	VTlogfile = VTlog()
 
 	#replay to confirm
 	for i in range(len(frarray)):		
@@ -254,7 +254,7 @@ if __name__ == "__main__":
 		print 'You must specify one can device'
 		exit(1)
 
-	dev = CANDriver(sys.argv[1],int(sys.argv[2]))
+	dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=int(sys.argv[2]))
 	dev.operate(Operate.START)
 
 	backgroudfrarray = []
@@ -265,7 +265,7 @@ if __name__ == "__main__":
 	#collect backgroud frames of bus
 	backgroudfrarray = fraquire(dev,20)
 
-	VTlogfile = CANSocket()
+	VTlogfile = VTlog()
 	longname.append(VTlogfile.logfrarray2file(VTlogfile,backgroudfrarray,"BR","Backgroud frames of testing bus"))
 	print 'End group data frame'
 
@@ -277,11 +277,11 @@ if __name__ == "__main__":
 
 	c = raw_input("Please take action to change the vehicle status in 1 minutes(Press Enter to continue)...")
 
-	VTlogfile = CANSocket()
+	VTlogfile = VTlog()
 	newfrarray = fraquire(dev,30,backgroudfrarray)
 	longname.append(VTlogfile.logfrarray2file(VTlogfile,newfrarray,"NR","New frames of testing bus"))
 	
-	VTlogfile = CANSocket()
+	VTlogfile = VTlog()
 	keyfrarray = get_keyframearray(backgroudfrarray,newfrarray)
 	longname.append(VTlogfile.logfrarray2file(VTlogfile,keyfrarray,"KR","Key frames of testing bus"))
 	

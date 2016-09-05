@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.append("..")
 from CAN_Driver import *
-from CAN_Socket import *
+from vtlog import *
 from CAN_Packet import *
 
 #This function is to replay can frame log(jason format). 
@@ -35,7 +35,7 @@ if __name__ == "__main__":
 	else:
 		name_devices = sys.argv[1]
 
-	dev = CANDriver(sys.argv[1],int(sys.argv[3]))
+	dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=int(sys.argv[3]))
 	
 	if(sys.argv[2][-4:] == "json"):	# send frames from log file  
 

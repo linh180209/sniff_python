@@ -5,7 +5,7 @@ import math
 import time
 from CanLib.CAN_Packet import *
 from CanLib.CAN_Driver import *
-from CanLib.CAN_Socket import *
+from CanLib.vtlog import *
 
 #This function is to analyze the affection when setting different bits of can frame 
 #Example: 
@@ -42,7 +42,7 @@ def analyzebit(dev,canid,indicate1=0,indicate2=8, delay=0.01,cloudflag="local"):
 		raise ValueError('error canid')
 
 
-	VTlogfile = CANSocket()
+	VTlogfile = VTlog()
 	frbuffer = []
 	data = [0 for x in range(8)]
 	startbase = 0
@@ -94,7 +94,7 @@ def analyzebit(dev,canid,indicate1=0,indicate2=8, delay=0.01,cloudflag="local"):
 if __name__ == "__main__":
 
 	print "Usage: python bit.py <candev> <can ID> <byterange1> <byterange2> <delay time> <testing mode> <baudrate>"
-	dev = CANDriver(sys.argv[1],125000)
+	dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=125000)
 	dev.operate(Operate.START)
 
 	analyzebit(dev,sys.argv[2],int(sys.argv[3]),int(sys.argv[4]), float(sys.argv[5]),"local")	
