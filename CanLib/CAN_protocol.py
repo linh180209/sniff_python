@@ -79,7 +79,7 @@ class ISOTP_driver(object):
 			start_time = time.time()
 			while True:
 				msg,devstatusflag = self.queue_recv.get(timeout=timeout)
-				print '0x%X'%msg.get_id()
+				#print '0x%X'%msg.get_id()
 				if msg == None:
 					return None,False
 				if not filter:
