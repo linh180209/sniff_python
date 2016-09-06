@@ -26,7 +26,7 @@ class VTlog:
 
 
 	def writelog(self,frbuffer=[]):
-		print self.file_name
+		print (self.file_name)
 		array = []
 		for i in range(len(frbuffer)):
 			writestr = [{"type":frbuffer[i].type,"count":frbuffer[i].count,"id":frbuffer[i].id,"dlc":frbuffer[i].dlc,"data":frbuffer[i].data,"delay":frbuffer[i].delay,"comment":frbuffer[i].comment}]

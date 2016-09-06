@@ -28,17 +28,17 @@ class AutoX(object):
 	def connect(self):
 		#check address
 		if(self.address == None):
-			print 'Address not value'
+			print ("Address not value")
 			exit()
 		
 		#check port
 		if(self.port == None):
-			print 'Port not value'
+			print ("Port not value")
 			exit()
 
 		#check log file
 		if(self.log_file == None):
-			print 'Log File not value'
+			print ("Log File not value")
 			exit()
 
 		# Create a TCP/IP socket

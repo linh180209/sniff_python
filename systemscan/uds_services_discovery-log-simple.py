@@ -4,7 +4,7 @@ from CanLib.CAN_protocol import *
 from CanLib.CAN_Packet import * 
 from CanLib.CAN_Driver import *
 from CanLib.vtlog import *
-from reversing import autoscan
+from reversing.autoscan import *
 import random
 import math
 import time
@@ -15,6 +15,8 @@ import os
 
 # This program is to scan system automatically and find dst,Services,Subfunctions.
 # sudo python uds-services-discovery.py /dev/ttyACM0 125000 0.5
+# or
+# # sudo python3.4 uds-services-discovery.py vcan0 0.5
 # payloads: 125000(baudrate),0.5(timeout 0.5 second)
 
 SERVICE_NAMES = {
@@ -88,14 +90,14 @@ def discoverdst(dev,timeout=1):
 
 #============UDS dst ID discovery================================
 
-	print "Start discovering dst ID..."
+	print ("Start discovering dst ID...")
 	
 	found_ids = []	
 	vtmsgbuffer = []
 	VTlogfile = VTlog()
 	dsts = []
 	#/// comments
-	vtmsgbuffer,found_ids = autoscan.collectAllID(dev,3)
+	vtmsgbuffer,found_ids = collectAllID(dev,3)
 	
 	fr = CAN_Packet()
 	#/// explain the payload the corresponding service type		0x02 means valid data of this frame. 0x10 means Diagnostics Section Control services. 0x01:Enter Default Section	
@@ -116,34 +118,34 @@ def discoverdst(dev,timeout=1):
 		vtmsg = VTMessage(fr.id,8,fr.get_payload(),1,0.01,"S","scan dst ID")
 		vtmsgbuffer.append(vtmsg)
 
-		print fr
+		print (fr)
 		devq.send_packet(fr)
 
 		for j in range(0,looplen): #try 5 times, but if id=0x7df,set to 100
 			recvfr,flag = devq.get_packet_filter_array(timeout,found_ids)  #wait for response 2 seconds  only receive frames that not in found_ids						
 			if recvfr != None:
-				print recvfr
+				print (recvfr)
 				vtmsg = VTMessage(recvfr.id,8,recvfr.get_payload(),1,0.01,"R","Recieve Frame")
 				vtmsgbuffer.append(vtmsg)
 				#/// why 0x50-7F???    0x50 and 0x7F
 				if recvfr.get_payload()[1] in [0x50,0x7F]:
 					count = count + 1
 					dsts.append([i,recvfr.id])
-					print "==================================="
+					print ("===================================")
 					commentstr = str(count)+": Request CAN ID is 0x"+str(hex(i))+"; Resp dst ID is 0x"+str(hex(recvfr.id))
 					print("%d: Request CAN ID is 0x%X; Resp dst ID is 0x%X" % (count,i,recvfr.id))
-					print "==================================="
+					print("===================================")
 					vtmsgbuffer[-1]= VTMessage(recvfr.id,8,recvfr.get_payload(),1,0.01,"K",commentstr)
 					if fr.id != 0x7df:
 						break
 			else:
 				break
 	logname = VTlogfile.writelog(vtmsgbuffer)
-	print "\n\n============================================================="
+	print ("\n\n=============================================================")
 	print("\nlog file: %s" % (logname))
-	print "\n\n============================================================="
-	print "Services id scan finished!"
-	print "\n\n============================================================="
+	print ("\n\n=============================================================")
+	print ("Services id scan finished!")
+	print ("\n\n=============================================================")
 
 #=====finished, dst are stored in dsts data & file, count is number of dst===============
 	devq.operate(Operate.STOP)
@@ -152,7 +154,7 @@ def discoverdst(dev,timeout=1):
 def discoverservices(dev,dsts=[],timeout=1):  # Scans for supported DCM services
 
 	print("Starting discovering supported services")
-	print dsts
+	print (dsts)
 	if dsts == None:
 		return None
 	#/// explain???	Init byte0 as valid length of the frame, byte1 and byte2 will get value in the below
@@ -177,7 +179,7 @@ def discoverservices(dev,dsts=[],timeout=1):  # Scans for supported DCM services
 			devstatusflag = True
 			while devstatusflag:			
 				devq.send_packet(fr)
-				print fr		
+				print (fr)		
 				vtmsg = VTMessage(fr.id,8,fr.get_payload(),1,0.01,"S","scan dst ID")
 				vtmsgbuffer.append(vtmsg)
 
@@ -192,36 +194,36 @@ def discoverservices(dev,dsts=[],timeout=1):  # Scans for supported DCM services
 					devstatusflag = True
 
 				if recvfr != None:
-					print recvfr
+					print (recvfr)
 					vtmsg = VTMessage(recvfr.id,8,recvfr.get_payload(),1,0.01,"R","Recieve Frame")
 					vtmsgbuffer.append(vtmsg)
 					if recvfr.get_payload()[3] not in [0x11]:	#0x11 means services not support
 						count = count + 1
 						supported_services.append([dsts[i][0],dsts[i][1],j]) #record the frame. dsts[i][0] means request id, dst[i][1] means related dst, j means supported services     
 						service_name = SERVICE_NAMES.get(fr.get_payload()[1], "Unknown service") #print the services on the screen
-						print "==================================="
+						print ("===================================")
 				
 						if recvfr.get_payload()[3] in [0x33,0x35,0x7E,0x7F]:  # 0x33: 'securityAccessDenied',0x35: 'invalidKey',0x7E: 'sub-FunctionNotSupportedInActiveSession',0x7F:'serviceNotSupportedInActiveSession'
 							print("%d: %s 0x%X 0x%X %s" % (count,"Supported Services in high security level:",fr.id,fr.get_payload()[1],service_name))
-							print "==================================="
+							print ("===================================")
 							vtmsgbuffer[-1]= VTMessage(recvfr.id,8,recvfr.get_payload(),1,0.01,"K",service_name)
 						else:
 							print("%d: %s 0x%X 0x%X %s" % (count,"Supported Services:",fr.id,fr.get_payload()[1],service_name))
-							print "==================================="
+							print ("===================================")
 							vtmsgbuffer[-1]= VTMessage(recvfr.id,8,recvfr.get_payload(),1,0.01,"K",service_name)
 	logname = VTlogfile.writelog(vtmsgbuffer)
-	print "\n\n============================================================="
+	print ("\n\n=============================================================")
 	print("\nlog file: %s" % (logname))		
-	print "\n\n============================================================="
-	print "Supported Services scan finished!"
-	print "\n\n============================================================="
+	print ("\n\n=============================================================")
+	print ("Supported Services scan finished!")
+	print ("\n\n=============================================================")
 	devq.operate(Operate.STOP)
 	return supported_services
 #/// what definitions of subfunctions???  each service has its own subfunctions  
 def discoversubfunctions(dev,supported_services=[],timeout=1):   #Scans for subfunctions of a given service.
 	
 	print("Starting discovering subfunctions of services")
-	print supported_services
+	print (supported_services)
 
 	if supported_services == None:
 		return None
@@ -256,7 +258,7 @@ def discoversubfunctions(dev,supported_services=[],timeout=1):   #Scans for subf
 					devstatusflag = True
 					while devstatusflag:
 						devq.send_packet(fr)
-						print fr		
+						print (fr)		
 						vtmsg = VTMessage(fr.id,8,fr.get_payload(),1,0.01,"S","Send Frame")
 						vtmsgbuffer.append(vtmsg)
 
@@ -264,9 +266,9 @@ def discoversubfunctions(dev,supported_services=[],timeout=1):   #Scans for subf
 						
 						
 						if recvfr != None and recvfr.get_payload()[3] == 0x78:  #wait for correct response    0x78: 'requestCorrectlyReceivedResponsePending'
-							print recvfr
+							print (recvfr)
 							recvfr,devstatusflag = devq.get_packet(timeout, filter=supported_services[i][1])
-							print recvfr
+							print (recvfr)
 							vtmsg = VTMessage(recvfr.id,8,recvfr.get_payload(),1,0.01,"R","Recieve Frame")
 							vtmsgbuffer.append(vtmsg)
 
@@ -278,7 +280,7 @@ def discoversubfunctions(dev,supported_services=[],timeout=1):   #Scans for subf
 									#time.sleep(0.01) 
 						#/// explain???		recvfr.data[1]-0x40 == datatemp[1] means node comfirm it supoort this subfunction.  recvfr.data[1]==0x7f means node support the subfunction but have errors
 						if recvfr != None and recvfr.get_payload()[3] != 0x13:  #0x13:incorrectMessageLengthOrInvalidFormat
-							print recvfr
+							print (recvfr)
 							vtmsg = VTMessage(recvfr.id,8,recvfr.get_payload(),1,0.01,"R","Recieve Frame")
 							vtmsgbuffer.append(vtmsg)
 
@@ -287,20 +289,20 @@ def discoversubfunctions(dev,supported_services=[],timeout=1):   #Scans for subf
 								supported_subfunc.append([supported_services[i],datatemp[2],datatemp[3]])
 								service_name = SERVICE_NAMES.get(fr.get_payload()[1], "Unknown service")
 								if recvfr.get_payload()[3] in [0x33,0x35,0x7E,0x7F]:	
-									print "==================================="
+									print ("===================================")
 									print("%d: 0x%X %s 0x%X 0x%X %s: 0x%X 0x%X" % (count,fr.id,"Supported subfunctions of Services in high security level",datatemp[0],datatemp[1],service_name, datatemp[2],datatemp[3]))
-									print "==================================="	
+									print ("===================================")	
 									vtmsgbuffer[-1]= VTMessage(recvfr.id,8,recvfr.get_payload(),1,0.01,"K",service_name)						
 						
 								elif recvfr.get_payload()[0] > 0x07:  #Node response long length data
 									print("%d: 0x%X %s 0x%X 0x%X %s: 0x%X 0x%X" % (count,fr.id,"get data stream",datatemp[0],datatemp[1],service_name,datatemp[2],datatemp[3]))
-									print "==================================="
+									print ("===================================")
 									time.sleep(0.5)
 								else:
-									print "==================================="
+									print ("===================================")
 									print("%d: 0x%X %s 0x%X 0x%X %s: 0x%X 0x%X" % (count,fr.id,"Supported subfunctions of Services",datatemp[0],datatemp[1],service_name,datatemp[2],datatemp[3]))
 									vtmsgbuffer[-1]= VTMessage(recvfr.id,8,recvfr.get_payload(),1,0.01,"K",service_name)
-									print "==================================="
+									print ("===================================")
 								
 								
 								
@@ -314,37 +316,51 @@ def discoversubfunctions(dev,supported_services=[],timeout=1):   #Scans for subf
 					
 
 			logname = VTlogfile.writelog(vtmsgbuffer)
-			print "\n\n============================================================="
+			print ("\n\n=============================================================")
 			print("\nlog file: %s" % (logname))
 
-	print "\n\n============================================================="
-	print "Supported Subfunctions of Services scan finished!"
+	print ("\n\n=============================================================")
+	print ("Supported Subfunctions of Services scan finished!")
 	devq.operate(Operate.STOP)
 	return supported_subfunc
 
 
 if __name__ == "__main__":
 	#/// cangendata.py or uds-services-discovery.py???  It's worng, should be print "Usage: python uds_services_discovery.py <candev> "
-	print "Usage: python uds_services_discovery.py <candev> <baudrate> <timeout>"
+	print ("Usage: python uds_services_discovery.py <candev> <baudrate> <timeout>")
+	print ("or")
+	print ("Usage: python3.4 uds_services_discovery.py <candev> <timeout>")
 
 	dsts = []
 	supported_services = []
 	supported_subfunc = []
 	
-	
-	dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=int(sys.argv[2]))
-	dev.operate(Operate.START)
+	if(sys.version_info >= (3,3)):
+		dev = CANDriver(TypeCan.SOCKET,name_dev=sys.argv[1])
+		dev.operate(Operate.START)
 
-	dsts = discoverdst(dev,float(sys.argv[3]))	
+		dsts = discoverdst(dev,float(sys.argv[2]))	
 
-	supported_services = discoverservices(dev,dsts,float(sys.argv[3]))
+		supported_services = discoverservices(dev,dsts,float(sys.argv[2]))
 
-	#supported_services = [[1956, 1964, 16], [1956, 1964, 17], [1956, 1964, 20], [1956, 1964, 25], [1956, 1964, 34], [1956, 1964, 39], [1956, 1964, 40], [1956, 1964, 46], [1956, 1964, 47], [1956, 1964, 49], [1956, 1964, 62], [1956, 1964, 133], [2015, 1964, 16], [2015, 1964, 17], [2015, 1964, 20], [2015, 1964, 25], [2015, 1964, 34], [2015, 1964, 39], [2015, 1964, 40], [2015, 1964, 46], [2015, 1964, 47], [2015, 1964, 49], [2015, 1964, 62], [2015, 1964, 133]]
+		#supported_services = [[1956, 1964, 16], [1956, 1964, 17], [1956, 1964, 20], [1956, 1964, 25], [1956, 1964, 34], [1956, 1964, 39], [1956, 1964, 40], [1956, 1964, 46], [1956, 1964, 47], [1956, 1964, 49], [1956, 1964, 62], [1956, 1964, 133], [2015, 1964, 16], [2015, 1964, 17], [2015, 1964, 20], [2015, 1964, 25], [2015, 1964, 34], [2015, 1964, 39], [2015, 1964, 40], [2015, 1964, 46], [2015, 1964, 47], [2015, 1964, 49], [2015, 1964, 62], [2015, 1964, 133]]
 
-	supported_subfunc = discoversubfunctions(dev,supported_services,float(sys.argv[3]))
-	print dsts,supported_services,supported_subfunc
+		supported_subfunc = discoversubfunctions(dev,supported_services,float(sys.argv[2]))
+		print (dsts,supported_services,supported_subfunc)
+		exit()
+	else:
+		dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=int(sys.argv[2]))
+		dev.operate(Operate.START)
 
-	exit()
+		dsts = discoverdst(dev,float(sys.argv[3]))	
+
+		supported_services = discoverservices(dev,dsts,float(sys.argv[3]))
+
+		#supported_services = [[1956, 1964, 16], [1956, 1964, 17], [1956, 1964, 20], [1956, 1964, 25], [1956, 1964, 34], [1956, 1964, 39], [1956, 1964, 40], [1956, 1964, 46], [1956, 1964, 47], [1956, 1964, 49], [1956, 1964, 62], [1956, 1964, 133], [2015, 1964, 16], [2015, 1964, 17], [2015, 1964, 20], [2015, 1964, 25], [2015, 1964, 34], [2015, 1964, 39], [2015, 1964, 40], [2015, 1964, 46], [2015, 1964, 47], [2015, 1964, 49], [2015, 1964, 62], [2015, 1964, 133]]
+
+		supported_subfunc = discoversubfunctions(dev,supported_services,float(sys.argv[3]))
+		print (dsts,supported_services,supported_subfunc)
+		exit()
 
 
 

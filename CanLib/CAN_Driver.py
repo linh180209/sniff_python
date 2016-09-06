@@ -1,6 +1,11 @@
-import serial
-from CAN_Packet import *
-from vtlog import *
+import sys
+try:
+    import serial
+except ImportError:
+    import socket
+import struct
+from CanLib.CAN_Packet import *
+from CanLib.vtlog import *
 
 class Operate:
 	START = 0
@@ -47,7 +52,7 @@ class CANDriver:
 	#0: start 1:stop
 	def operate(self,flag):
 		if not (flag == Operate.START or flag == Operate.STOP):
-			print 'flag must be is Operate.START or Operate.STOP'
+			print ("flag must be is Operate.START or Operate.STOP")
 			exit()
 		if(flag == Operate.START):
 			if(self.type == TypeCan.SERIAL):
@@ -59,7 +64,7 @@ class CANDriver:
 				except:
 					print("Python 3.3 or later is needed for native SocketCan")
 					raise SystemExit(1)
-			    	self.socket = socket.socket(socket.PF_CAN, socket.SOCK_RAW, socket.CAN_RAW)
+				self.socket = socket.socket(socket.PF_CAN, socket.SOCK_RAW, socket.CAN_RAW)
 				self.flag_run = True
 				self.socket.bind((self.name_dev,))
 				self.start_time = time.time()	
@@ -167,8 +172,8 @@ class CANDriver:
 			for n in range(0,count): 
 				dev.send_driver(packet)
 				time.sleep(VTMessagearray[i].delay)
-				print str(packet)
-        	return True
+				print (str(packet))
+		return True
 
 	def sendframesfromfile1b1(self,dev,filename):
 		VTlf = VTlog()
@@ -184,7 +189,7 @@ class CANDriver:
 			for n in range(0,count): 
 				dev.send_driver(packet)
 				time.sleep(VTMessagearray[i].delay)
-				print packet
+				print (packet)
 			c = raw_input("Press Enter to go ahead!")
 	
 		return True

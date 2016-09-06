@@ -1,13 +1,5 @@
 import sys
-sys.path.append("..")
-from CAN_Packet import *
-from CAN_Driver import *
-from CAN_protocol import *
-import time
-
-p = CAN_Packet()
-p.id = 0x100
-p.len = 5
-p.data[0] = 1
-p.data[1] = 2
-print str(p)
+print (sys.version_info >= (3,3))
+a = 10
+print ('hello %d'%a)
+assert isinstance('s', int), 'id must be an integer'

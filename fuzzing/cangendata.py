@@ -13,8 +13,14 @@ from CanLib.CAN_protocol import *
 #This function is to Generate can frames. One is fixed length of can data. The other one is random. 
 #example : 
 # fixed length:  sudo python cangendata.py /dev/ttyACM0 0x266 0 8 100 0.01 local  Payloads: 0x266(CAN ID),0(Indicator1),8(Indicator2),100(Can frame count),0.01(delay time)
+# or
+# sudo python3.4 cangendata.py vcan0 0x266 0 8 100 0.01 local
 # random length: sudo python cangendata.py /dev/ttyACM0 0x266 long 100 0.01 local Payloads: 0x266(CAN ID),long(flag for long length data),100(Can frame count),0.01(delay time)
+# or
+# sudo python3.4 cangendata.py vcan0 0x266 long 100 0.01 local
 # Regular data with fixed length: sudo python cangendata.py /dev/ttyACM0 0x266 regular 0 8 0x80 0xFF 0x0 0.01 up[down] local
+# or
+# sudo python3.4 cangendata.py vcan0 0x266 regular 0 8 0x80 0xFF 0x0 0.01 up[down] local
 # payload:0x266(CAN ID),regular(flag for regular data),0(Indicator1),8(Indicator2),0x80(start number from 0x00~0xFF),0xFF(TOP number from 0x00~0xFF),0x0(LOW number from 0x00~0xFF),0.01(delay time),up(direction:up for increasing, down for decreasing)
 #Author: BensonYang
 #Date: 26072016
@@ -47,7 +53,7 @@ def fixedlen(dev,canid,indicate1=0,indicate2=8,framecount = 1000, delay=0.01,clo
 			fr = CAN_Packet()
 			fr.configure(canidint,8,data,1)
 			dev.send_driver(fr)
-			print fr
+			print (fr)
 	filename = VTlogfile.writelog(frbuffer)
 	return filename
 
@@ -81,7 +87,7 @@ def flexlen(dev,canid,framecount = 1000, delay=0.01,cloudflag="local"):   #len o
 			frbuffer.append(vtmsg)
 			if cloudflag == "local":
 				#fr = can.Frame(canidint,8,data,1)
-				print fr
+				print (fr)
 				dev.send_driver(fr)	
 
 	filename = VTlogfile.writelog(frbuffer)
@@ -147,7 +153,7 @@ def regular(dev,canid,indicate1=0,indicate2=8,startbase=0x80, topcount=0xFF, low
 				fr = CAN_Packet()
 				fr.configure(canidint,8,data,1)
 				dev.send_driver(fr)
-				print fr
+				print (fr)
 	else:
 		while datacount >= datalow:
 			data = [0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00]
@@ -160,7 +166,7 @@ def regular(dev,canid,indicate1=0,indicate2=8,startbase=0x80, topcount=0xFF, low
 				fr = CAN_Packet()
 				fr.configure(canidint,8,data,1)
 				dev.send_driver(fr)
-				print fr
+				print (fr)
 
 	filename = VTlogfile.writelog(frbuffer)
 	return filename
@@ -168,12 +174,18 @@ def regular(dev,canid,indicate1=0,indicate2=8,startbase=0x80, topcount=0xFF, low
 	
 
 if __name__ == "__main__":
+	print ("Benson mark Usage: python cangendata.py <candev> <can_id> <byterange1> <byterange2> [longlengthflag/regularflag] <frame count> <delay time>")
+	print ("or")
+	print ("Benson mark Usage: python3.4 cangendata.py <candev> <can_id> <byterange1> <byterange2> [longlengthflag/regularflag] <frame count> <delay time>")
 
+	if(sys.version_info >= (3,3)):
+		dev = CANDriver(TypeCan.SOCKET,name_dev=sys.argv[1])
+	else:
+		dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=125000)
 
-	dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=125000)
 	dev.operate(Operate.START)
-	print "Benson mark Usage: python cangendata.py <candev> <can_id> <byterange1> <byterange2> [longlengthflag/regularflag] <frame count> <delay time>"
-	print "Generating Frames..."
+	
+	print ("Generating Frames...")
 
 	if sys.argv[3]=="long":		#already input long lengthflag
 		flexlen(dev,sys.argv[2],int(sys.argv[4]),float(sys.argv[5]),sys.argv[6])

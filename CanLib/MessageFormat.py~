@@ -32,7 +32,7 @@ class MessageFormat(object):
 
 	def parse_packet(self, packet):
 		if not isinstance(packet, CAN_Packet):
-			print 'invalid packet'
+			print ('invalid packet')
 			exit()
 		for m in self.message:
 			if m.id == packet.get_id():
@@ -56,22 +56,22 @@ class Message_json(object):
 	def configure_signals(self, name, start_bit, length, factor=1, offset=0):
 		#check start bit
 		if not isinstance(start_bit, int):
-			print 'start_bit must be an integer'
+			print ('start_bit must be an integer')
 			exit()
 
 		#check length
 		if not isinstance(length, int):
-			print 'length must be an integer'
+			print ('length must be an integer')
 			exit()
 
 		#check factor
 		if not isinstance(factor, int):
-			print 'factor must be an integer'		
+			print ('factor must be an integer')		
 			exit()
 
 		#check offset
 		if not isinstance(offset, int):
-			print 'offset must be an integer'
+			print ('offset must be an integer')
 			exit()
 		
 
@@ -83,7 +83,7 @@ class Message_json(object):
 
 	def parse_message(self, packet):
 		if not isinstance(packet, CAN_Packet):
-			print 'invalid packet'
+			print ('invalid packet')
 			exit()
 
 		# combine 8 data bytes into single value

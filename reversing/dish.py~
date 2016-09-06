@@ -10,6 +10,8 @@ from CanLib.CAN_Driver import *
 #This function is to dish system via can frames
 #Example: 
 # sudo python dish.py /dev/ttyACM0 0x266 0 8 0.01 local
+# or
+# sudo python3.4 dish.py vcan0 0x266 0 8 0.01 local
 
 def analyzebyte(dev,canid,indicate1=0,indicate2=8, delay=0.01,cloudflag="local"):
 
@@ -49,9 +51,15 @@ def analyzebyte(dev,canid,indicate1=0,indicate2=8, delay=0.01,cloudflag="local")
 
 if __name__ == "__main__":
 
-	print "Usage: python dish.py <candev> <can ID> <byterange1> <byterange2> <delay time> <testing mode>"
-	dev = CANDriver(sys.argv[1],125000)
+	print ("Usage: python dish.py <candev> <can ID> <byterange1> <byterange2> <delay time> <testing mode>")
+	print ("or")
+	print ("Usage: python3.4 dish.py <candev> <can ID> <byterange1> <byterange2> <delay time> <testing mode>")
+
+	if(sys.version_info >= (3,3)):
+		dev = CANDriver(TypeCan.SOCKET,name_dev=sys.argv[1])
+	else:
+		dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=125000)
 	dev.operate(Operate.START)
 	analyzebyte(dev,sys.argv[2],int(sys.argv[3]),int(sys.argv[4]), float(sys.argv[5]),"local")	
 
-	print "Finish dish!"
+	print ("Finish dish!")

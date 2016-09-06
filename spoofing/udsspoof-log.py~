@@ -14,6 +14,8 @@ from CanLib.CAN_Packet import *
 
 # This program is to simulate ECU that could interact with diagnostic device via UDS protocal
 # sudo python udsspoof.py /dev/ttyACM0 125000
+# or
+# sudo python3.4 udsspoof.py vcan0
 
 
 CONST = Const()
@@ -74,10 +76,10 @@ def print_bin(bin, size):
 	plog("\n")
 
 def plog(fmt):
-	print fmt
+	print (fmt)
 
 def print_pkt(fr):
-	print fr
+	print (fr)
 
 # Generates data into a buff and returns it.
 def gen_data(scope, size):
@@ -160,7 +162,7 @@ def isotp_send_to(dev, data, size, dest):
 		#print data
 		#print datatemp
 		#print frame.data
-		print frame
+		print (frame)
 		dev.send_driver(frame)
 		logdataobj.append(frame)
 	else:
@@ -185,7 +187,7 @@ def isotp_send_to(dev, data, size, dest):
 		frame.data = datatemp
 		#print data
 		#print datatemp
-		print frame
+		print (frame)
 		dev.send_driver(frame)
 		logdataobj.append(frame)
 		left = left - 6
@@ -198,7 +200,7 @@ def isotp_send_to(dev, data, size, dest):
 					frame.data[1:1+7] = data[(size-left):(size-left+7)]
 					dev.send_driver(frame)
 					logdataobj.append(frame)
-					print frame
+					print (frame)
 					counter = counter + 1
 					left = left - 7
 				else:
@@ -207,7 +209,7 @@ def isotp_send_to(dev, data, size, dest):
 					frame.data[1:1+16] = data[(size-left):(size-left+16)]
 					dev.send_driver(frame)
 					logdataobj.append(frame)
-					print frame
+					print (frame)
 					left = 0
 		else:
 			gBuffer[0:size] = data
@@ -361,9 +363,9 @@ def calc_vin_checksum(vin, size):
 	w = [ 8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2]
 	checksum = 0
 	num = None
-	print "mark"
-	print vin
-	print size
+	print ("mark")
+	print (vin)
+	print (size)
 	for i in range(0,size):
 		if((vin[i] == 'I') or (vin[i] == 'O') or (vin[i] == 'Q')):
 			num = 0
@@ -481,7 +483,7 @@ def handle_vehicle_info(dev,frame):
 		if(fuzz_level == 0):			
 			vin = VIN
 			chksum = calc_vin_checksum(vin, 17)
-			print vin
+			print (vin)
 			vin = list(vin)
 			#vin[8] = chksum
 			resp = [frame.data[1] + 0x40,frame.data[2],1]
@@ -498,7 +500,7 @@ def handle_vehicle_info(dev,frame):
 			#resp[3:] = vin
 			#resp[3:] = [0x56,0x49,0x53,0x55,0x41,0x4C,0x54,0x48,0x52,0x45,0x41,0x54]
 			
-			print resp
+			print (resp)
 			isotp_send(dev, resp, 3 + len(vin))
 		elif(fuzz_level == 1):
 			if(verbose):
@@ -1185,7 +1187,7 @@ def handle_pkt(dev,frame):
 
 if __name__ == "__main__":
 	can_name = None
-	print "sudo python udsspoof.py candev baudrate"
+	print ("sudo python udsspoof.py candev baudrate")
 	try:
 		opts, args = getopt.getopt(sys.argv[1:], "cV:zl:vFh", ["help="])
 		if (len(args) < 1):
@@ -1217,7 +1219,10 @@ if __name__ == "__main__":
 
 	timeout = 1.02 #20ms
 	#dev = CantactDev(sys.argv[1],timeout)
-	dev = CANDriver(can_name,int(sys.argv[2]))
+	if(sys.version_info >= (3,3)):
+		dev = CANDriver(TypeCan.SOCKET,name_dev=can_name)
+	else:
+		dev = CANDriver(TypeCan.SERIAL,port=can_name,bit_rate=int(sys.argv[2]))
 	dev.operate(Operate.START)
 
 	start_tv = time.time()
@@ -1234,7 +1239,7 @@ if __name__ == "__main__":
 	VTlogfile = VTlog()
 
 	while((time.time()-start_tv) < 3*60):
-		print count
+		print (count)
 		count += 1		
 		frame = dev.receive_driver()
 		logdataobj.append(frame)
@@ -1244,6 +1249,6 @@ if __name__ == "__main__":
 
 	
 	logname = VTlogfile.logfrarray2file(VTlogfile,logdataobj,"P","Log Frames")
-	print "Finish the program!"
-	print logname
+	print ("Finish the program!")
+	print (logname)
 

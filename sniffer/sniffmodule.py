@@ -15,6 +15,8 @@ except ImportError:
 
 # This program is to sniffer can data automatically and revease the key data frame that take actions
 # sudo python sniffmodule.py /dev/ttyACM0 125000
+# or 
+# sudo python3.4 sniffmodule.py vcan0
 
 keyfrbuffer = []   #store key frames
 array_f = []  #store frames array
@@ -45,14 +47,14 @@ def print_frame(frame):
 				result = result + bcolors.RED + "0x%X"%(frame.get_payload()[i]) + bcolors.END + ","
 			else:
 				result = result + "0x%X," %frame.get_payload()[i] 
- 	return result
+	return result
 
 def print_all_frame(frame,array_print=[]):
 	array_print = add_frame_array_print(frame)
 	os.system("clear")
 	for i in range(len(array_print)):
 		printresult = print_frame(array_print[i])
-		print "%d %s "% (i+1,printresult)
+		print ("%d %s "% (i+1,printresult))
 	return array_print
 
 def add_frame_array_print(frame,array_print=[]):
@@ -126,7 +128,7 @@ def statics_framearray(array_f):
 
 	for i in range(len(array_f)):
 		if array_f[i].id not in found_ids:		
-	    		found_ids.append(array_f[i].id)
+			found_ids.append(array_f[i].id)
 			statics_info.append([array_f[i].id,array_f[i].count,array_f[i].sibdcount,array_f[i].bytechangecount])			
 			framgechangerate = round(float(array_f[i].sibdcount)/array_f[i].count,3)			
 			bytechangeratearray = []
@@ -136,8 +138,8 @@ def statics_framearray(array_f):
 			statics_info2.append([array_f[i].id,array_f[i].count,framgechangerate,bytechangeratearray])
 				
 
-	print statics_info
-	print statics_info2
+	print (statics_info)
+	print (statics_info2)
 
 	return statics_info,statics_info2
 
@@ -188,12 +190,12 @@ def get_keyframearray(array_f_backgroud,array_f_new):  #to do more use  array_f_
 						
 						if frcount ==1:
 							keyfrarray.append(array_f_new[i])
-							print array_f_new[i].id,array_f_new[i].get_payload(),j,array_f_new[i].bytechangecount[j],array_f_new[i].bytechangecount
+							print (array_f_new[i].id,array_f_new[i].get_payload(),j,array_f_new[i].bytechangecount[j],array_f_new[i].bytechangecount)
 							datatemp.append(array_f_new[i].get_payload()[j])
 							break
 						else:
 							if array_f_new[i].get_payload()[j] not in datatemp :
-								print array_f_new[i].id,array_f_new[i].get_payload(),j,array_f_new[i].bytechangecount[j],array_f_new[i].bytechangecount
+								print (array_f_new[i].id,array_f_new[i].get_payload(),j,array_f_new[i].bytechangecount[j],array_f_new[i].bytechangecount)
 								keyfrarray.append(array_f_new[i])		#get key frames
 								datatemp.append(array_f_new[i].get_payload()[j])
 							break
@@ -212,7 +214,7 @@ def logfrarray2file(array_f,frtype = "P",frcomment = ""):
 
 	logname = VTlogfile.writelog(vtmsgbuffer)
 
- 	print("\nlog file: %s \n" % (logname))
+	print("\nlog file: %s \n" % (logname))
 	
 	return logname
 
@@ -228,7 +230,7 @@ def replayarray1b1(frarray=[]):
 		while(flags_comment != 0):
 			for k in range(10):
 				dev.send_driver(fr)
-			print fr
+			print (fr)
 			c = raw_input("Import frame? (write comment directly), press r to repeat and Enter directly to proceed\n")
 				
 			if c == "r":
@@ -241,7 +243,7 @@ def replayarray1b1(frarray=[]):
 				flags_comment = 0
 			
 	logname = VTlogfile.writelog(vtmsgbuffer)
- 	print("\nlog file: %s" % (logname))
+	print("\nlog file: %s" % (logname))
 	
 
 	return logname
@@ -251,10 +253,12 @@ def replayarray1b1(frarray=[]):
 if __name__ == "__main__":
 	#get deveice name
 	if (len(sys.argv) < 2):
-		print 'You must specify one can device'
+		print ('You must specify one can device')
 		exit(1)
-
-	dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=int(sys.argv[2]))
+	if(sys.version_info >= (3,3)):
+		dev = CANDriver(TypeCan.SERIAL,name_dev=sys.argv[1])
+	else:
+		dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=int(sys.argv[2]))
 	dev.operate(Operate.START)
 
 	backgroudfrarray = []
@@ -267,7 +271,7 @@ if __name__ == "__main__":
 
 	VTlogfile = VTlog()
 	longname.append(VTlogfile.logfrarray2file(VTlogfile,backgroudfrarray,"BR","Backgroud frames of testing bus"))
-	print 'End group data frame'
+	print ('End group data frame')
 
 	#filter unstable bytes
 	for i in range(len(backgroudfrarray)):
@@ -290,7 +294,7 @@ if __name__ == "__main__":
 	replayarray1b1(keyfrarray)
 
 	for i in range(len(longname)):
-		print longname[i]
+		print (longname[i])
 
 	exit()
 	

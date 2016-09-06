@@ -23,7 +23,7 @@ class CAN_Packet(object):
 		if(v_type == 0):
 
 			if not isinstance(value, int):
-				print 'CAN ID should be an integer!'
+				print ("CAN ID should be an integer!")
 				exit()
 
 			# validate CAN ID
@@ -35,11 +35,11 @@ class CAN_Packet(object):
 		#validate packet length
 		elif(v_type == 1):
 			if not isinstance(value, int):
-				print 'length value must be interger'
+				print ("length value must be interger")
 				exit()
 			
 			if not (value >= 0 and value <= 8):
-				print 'not valid length'
+				print ("not valid length")
 				exit()
 
 			self.len = value
@@ -48,28 +48,28 @@ class CAN_Packet(object):
 		elif(v_type == 2):
 			# data should be a list
 			if not isinstance(value, list):
-				print 'CAN data must be a list'
+				print ("CAN data must be a list")
 				exit()
 			
 			# data can only be 8 bytes maximum
 			if (len(value) > 8):
-				print 'CAN payload more than 8 not supported'
+				print ("CAN payload more than 8 not supported")
 				exit()
 
 			# each byte must be a valid byte, int between 0x0 and 0xFF
 			for byte in value:
 				if not isinstance(byte, int):
-					print 'invalid CAN payloads'
+					print ("invalid CAN payloads")
 					exit()
 				if not (byte >= 0 and byte <= 0xFF):
-					print 'invalid CAN payloads'
+					print ("invalid CAN payloads")
 					exit()
 
 			self.data = value
 		#check count
 		elif(v_type == 3):
 			if not isinstance(value, int):
-				print 'count must be a interger'
+				print ("count must be a interger")
 				exit()
 			self.count = value
 
@@ -84,10 +84,10 @@ class CAN_Packet(object):
 		#check packet type
 		elif(v_type == 6):
 			if not isinstance(value, int):
-				print 'Packet Type must be a interger'
+				print ("Packet Type must be a interger")
 				exit()
 			if(value < PacketType.DataPacket or value > PacketType.OverloadPacket):
-				print 'Packet Type not value'
+				print ("Packet Type not value")
 				exit()
 			self.frame_type = value
 				
@@ -97,8 +97,8 @@ class CAN_Packet(object):
 
 	def get_payload(self):
 		data_len = min(self.len, len(self.data))
-        	result = self.data[:data_len]
-        	result.extend([0] * (8 - data_len))
+		result = self.data[:data_len]
+		result.extend([0] * (8 - data_len))
 		return result
 	
 	def get_len(self):

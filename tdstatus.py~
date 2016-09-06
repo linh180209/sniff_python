@@ -7,6 +7,8 @@ from CanLib.autodetectcan import *
 
 # This function is to check the status of testing device. The function will return True if the testing device is alive. Othervise, return false
 # sudo python tdstatus.py /dev/ttyACM0 125000
+# or
+# sudo python3.4 tdstatus.py vcan0
 #Author: BensonYang
 #Date: 26072016
 
@@ -55,18 +57,21 @@ def recover(devq,udsentry = 0x7df):  #recover the sys to default section
 if __name__ == "__main__":
 	
 
-	dev = CANDriver(sys.argv[1],int(sys.argv[2]))
+	if(sys.version_info >= (3,3)):
+		dev = CANDriver(TypeCan.SOCKET,name_dev=sys.argv[1])
+	else:
+		dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=int(sys.argv[2]))
 	#autodetectcan.detect_can(dev)
 	devq = ISOTP_driver(dev)
 	devq.operate(Operate.START)
 	
-	print "Checking the status of device:"
+	print ("Checking the status of device:")
 
 	if check(devq,0x7df):
-		print "Testing device is alive"
+		print ("Testing device is alive")
 	else:
 		recover(devq,0x7df)
 		if check(devq,0x7df):
-			print "Testing device is alive"
+			print ("Testing device is alive")
 		else:
-			print "Cannot Get any Info from Testing Device! Please check the cable or testing device working status manually"
+			print ("Cannot Get any Info from Testing Device! Please check the cable or testing device working status manually")

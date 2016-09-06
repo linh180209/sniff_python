@@ -1,10 +1,10 @@
-from CAN_Packet import *
+from CanLib.CAN_Packet import *
 import multiprocessing
 
 try:
-    import queue
+	import queue
 except ImportError:
-    import Queue as queue
+	import Queue as queue
 import time
 
 class Type:
@@ -41,12 +41,12 @@ class ISOTP_driver(object):
 			self.process_send.terminate()
 			self.can_dev.operate(Operate.STOP)
 		else:
-			print 'flag Operate must to be Operate.START or Operate.STOP'	
+			print ("flag Operate must to be Operate.START or Operate.STOP")	
 			exit();
 		
 	def task_receive(self):
 		while not self.end:
-            		packet = self.can_dev.receive_driver()
+			packet = self.can_dev.receive_driver()
 			try:
 				self.queue_recv.put(packet)
 			except queue.Full:
@@ -79,7 +79,7 @@ class ISOTP_driver(object):
 			start_time = time.time()
 			while True:
 				msg,devstatusflag = self.queue_recv.get(timeout=timeout)
-				#print '0x%X'%msg.get_id()
+				print ("0x%X"%msg.get_id())
 				if msg == None:
 					return None,False
 				if not filter:
@@ -174,13 +174,13 @@ class ISOTP_driver(object):
 
 	def generate_packet(self,id_ms,length_ms,data_ms,type):
 		if not isinstance(id_ms, int):
-			print 'CAN ID must be an integer'
+			print ("CAN ID must be an integer")
 			exit()
 		if not isinstance(length_ms, int):
-			print 'length must be an integer'
+			print ("length must be an integer")
 			exit()
 		if not isinstance(data_ms, list):
-			print 'Payloads must be a list'
+			print ("Payloads must be a list")
 			exit()
 	
 		if(type == Type.OBD):
@@ -189,20 +189,18 @@ class ISOTP_driver(object):
 		elif(type == Type.UDS):
 			return self.generate_UDS(id_ms,length_ms,data_ms)
 		else:
-			print 'type must to Type.UDS or Type.OBD'
+			print ("type must to Type.UDS or Type.OBD")
 			return None
 	
 	# single frame	
 	def parse_signle_frame(self,packet):
 		# init
-        	self.byte_count = 0
-        	self.s_number = 0
-            
+		self.byte_count = 0
+		self.s_number = 0
 		# validate length
 		self.length_ms = packet.get_payload()[0] & 0xF
-            
 		if self.length_ms < 1 or self.length_ms > 7:
-			print "invalid length for single packet"
+			print ("invalid length for single packet")
 			exit()
 			
 		return packet.get_payload()[1:self.length_ms+1]
@@ -210,7 +208,7 @@ class ISOTP_driver(object):
 	def parse_first_frame(self,packet):
 		# init
 		self.byte_count = 0
-        	self.s_number = 0
+		self.s_number = 0
 
 		# get byte 0
 		temp = (packet.get_payload()[0] & 0xF) << 8 
@@ -256,16 +254,16 @@ class ISOTP_driver(object):
 				if self.byte_count == self.length_ms:
 					return self.data_ms
 				elif self.byte_count > self.length_ms:
-					print 'data length not match'
+					print ("data length not match")
 					exit()
 				self.s_number += 1
 				if (self.s_number > 15):
 					self.s_number = 0
 			else:
-				print 'sequence number not match'
+				print ("sequence number not match")
 				exit()								
 		else:
-			print 'Need have before first Packet'
+			print ("Need have before first Packet")
 			exit()
 
 	def parse_packet(self, packet):
@@ -302,14 +300,14 @@ class ISOTP_driver(object):
 		elif(driver_type == Type.UDS):
 			result = None
 			#generate a request
-        		packet_request = self.generate_packet(ecu_id,len(payload) + 1,[mode] + payload,Type.UDS)
+			packet_request = self.generate_packet(ecu_id,len(payload) + 1,[mode] + payload,Type.UDS)
 			
 			# send the packet request
 			for f in packet_request:
 				self.queue_send.put(f)
 
 			start_ts = time.time()
-        		while result == None:
+			while result == None:
 				response,flag = self.get_packet(filter=ecu_id + 0x20)
 				if response:
 					result = self.parse_packet(response)

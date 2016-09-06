@@ -10,6 +10,8 @@ from CanLib.vtlog import *
 #This function is to analyze the affection when setting different bits of can frame 
 #Example: 
 # sudo python dish.py /dev/ttyACM0 0x266 0 1 0.01 local 125000
+# or
+# sudo python3.4 dish.py vcan0 0x266 0 1 0.01 local
 # payloads meaning: 0x266(can id), 0 1(data indicator) 0.01(time gap between frames) local(run in local) 125000(can bus baudrate)
 
 def SET_BIT(self, val, bitIndex):
@@ -59,8 +61,8 @@ def analyzebit(dev,canid,indicate1=0,indicate2=8, delay=0.01,cloudflag="local"):
 			for n in range(indicate1,indicate2):
 				data[n] = bytedata
 					
-			print bin(bytedata)
-			print data			
+			print (bin(bytedata))
+			print (data)			
 			if cloudflag == "local":
 				loop = 1
 				while(loop):
@@ -69,7 +71,7 @@ def analyzebit(dev,canid,indicate1=0,indicate2=8, delay=0.01,cloudflag="local"):
 					dev.send_driver(fr)
 					dev.send_driver(fr)
 					dev.send_driver(fr)
-					print fr
+					print (fr)
 					bitcomment = raw_input("\nrepeat?(y or n): \r\n")
 					if bitcomment == "n":
 						loop = 0
@@ -88,15 +90,20 @@ def analyzebit(dev,canid,indicate1=0,indicate2=8, delay=0.01,cloudflag="local"):
 				
 			
 	logname = VTlogfile.writelog(frbuffer)
-	print logname
+	print (logname)
 	return logname
 
 if __name__ == "__main__":
 
-	print "Usage: python bit.py <candev> <can ID> <byterange1> <byterange2> <delay time> <testing mode> <baudrate>"
-	dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=125000)
+	print ("Usage: python bit.py <candev> <can ID> <byterange1> <byterange2> <delay time> <testing mode> <baudrate>")
+	print ("or")
+	print ("Usage: python3.4 bit.py <candev> <can ID> <byterange1> <byterange2> <delay time> <testing mode>")
+	if(sys.version_info >= (3,3)):
+		dev = CANDriver(TypeCan.SOCKET,name_dev=sys.argv[1])
+	else:
+		dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=125000)
 	dev.operate(Operate.START)
 
 	analyzebit(dev,sys.argv[2],int(sys.argv[3]),int(sys.argv[4]), float(sys.argv[5]),"local")	
 
-	print "Finish bit analyze!"
+	print ("Finish bit analyze!")

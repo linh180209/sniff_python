@@ -16,19 +16,21 @@ import bit
 
 # This program is to scan can data automatically and try to revease the data
 # sudo python autoscan.py /dev/ttyACM0 0 8 125000
+# or
+# sudo python autoscan.py vcan0 0 8
 
 def collectAllID(dev,totalframecount=3000,filename=None): #receive frames from dev in realtime. Or analyze frames from filename.
 
 #============Collecting All CAN ID================================
 
-	print "\n============================================================="
-        print("Starting Collecting All CAN ID:\n")
+	print ("\n=============================================================")
+	print("Starting Collecting All CAN ID:\n")
 
 	found_ids = []	
 	vtmsgbuffer = []
 	VTlogfile = VTlog()
 	
-        for i in range(0,totalframecount):   #total number can frame 
+	for i in range(0,totalframecount):   #total number can frame 
 		try:
 			fr = dev.receive_driver()
 			#print fr
@@ -39,12 +41,12 @@ def collectAllID(dev,totalframecount=3000,filename=None): #receive frames from d
 				print("Last ID: 0x%X; total found %d" % (fr.id,len(found_ids) + 1))
 				vtmsg = VTMessage(fr.id,8,fr.get_payload(),1,0.01,"C","Collect ID From Bus")
 				vtmsgbuffer.append(vtmsg)
-	    			found_ids.append(fr.id)
+				found_ids.append(fr.id)
 	
 	found_ids.sort()
 	
 	logname = VTlogfile.writelog(vtmsgbuffer)
- 	print("\nlog file: %s" % (logname))
+	print("\nlog file: %s" % (logname))
 	return vtmsgbuffer,found_ids
 
 #=====CAN IDs are stored in vtmsgbuffer===============
@@ -53,7 +55,7 @@ def collectAllID(dev,totalframecount=3000,filename=None): #receive frames from d
 def reverse(dev,fridbuffer=[],fuzzframecount=200,byterange1=0,byterange2=8):
 
 	
-	print "\n\n============================================================="
+	print ("\n\n=============================================================")
 	print("Starting Reversing system")
 
 	data = [0 for x in range(8)]
@@ -75,24 +77,26 @@ def reverse(dev,fridbuffer=[],fuzzframecount=200,byterange1=0,byterange2=8):
 			vtmsg = VTMessage(fr.id,8,fr.get_payload(),1,0.01,"S","")
 			vtmsgbuffer.append(vtmsg)
 			time.sleep(0.01)  #10ms/frame
-		print i
+		print (i)
 		fuzzcomment = raw_input("\nCAN ID:0x%X Any affection(y or n)? if no, press Enter directly: \r\n" % (fr.id)) #if there're no affection, press Enter to continue the program directly
 		if fuzzcomment == "y":
 			vtmsgbuffer[-1]= VTMessage(fr.id,8,fr.get_payload(),1,0.01,"K",fuzzcomment)
 			keyid.append(fr.id)
 
 	logname = VTlogfile.writelog(vtmsgbuffer)
-	print "\n\n============================================================="
+	print ("\n\n=============================================================")
 	print("\nlog file: %s" % (logname))
-	print "\n=============Finish Reversing!================================="
-	print "\n==============================================================="
+	print ("\n=============Finish Reversing!=================================")
+	print ("\n===============================================================")
 	
 	return keyid		#return key id that user comment it
 
 if __name__ == "__main__":
 
 	
-	print "Usage: python autoscan.py <candev> <byterange1> <byterange2> <baudrate>"
+	print ("Usage: python autoscan.py <candev> <byterange1> <byterange2> <baudrate>")
+	print ("or")
+	print ("Usage: python3.4 autoscan.py <candev> <byterange1> <byterange2> <baudrate>")
 
 	frbuffer = []
 	fridarray = []
@@ -102,10 +106,11 @@ if __name__ == "__main__":
 	#vtmsgbuffer = []
 
 	#baudrate = autodetectcan.detect_can(sys.argv[1])
-	
-	dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=int(sys.argv[4]))
-	dev.operate(Operate.START)	
-	#dev.ser.write(baudrate)
+	if(sys.version_info >= (3,3)):
+		dev = CANDriver(TypeCan.SOCKET,name_dev=sys.argv[1])
+	else:
+		dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=int(sys.argv[4]))
+	dev.operate(Operate.START)
 	
 
 	frbuffer,fridarray = collectAllID(dev,3000,None)
@@ -117,7 +122,7 @@ if __name__ == "__main__":
 
 	keyinfo = autoindeep.analyzebytes(dev,keyid)
 
-	print keyinfo
+	print (keyinfo)
 
 	#test value
 	#keyinfo = [[303, 1, 'warning light']]
@@ -152,15 +157,15 @@ if __name__ == "__main__":
 		count = VTMessagearray[i].count
 		
 		print ("%d: %s:" % (i+1,VTMessagearray[i].comment))
-		print frame
+		print (frame)
 
 		for n in range(0,count): 
 			
 			dev.send_driver(frame)
 			time.sleep(VTMessagearray[i].delay)
-			print frame
+			print (frame)
 		c = raw_input("\nPress Enter to go ahead: \r\n")
 	
 	print ("key log file: %s" % (keylongfile))
-	print "Finish Reversing!"
+	print ("Finish Reversing!")
 	

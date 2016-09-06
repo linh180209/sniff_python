@@ -10,13 +10,18 @@ from CanLib.CAN_Driver import *
 #This function is to Generate random fuzzing can frames(include id and data). 
 #Example: 
 # sudo python fuzzran.py /dev/ttyACM0 0 8 100 0.01
+# or
+# sudo python3.4 fuzzran.py vcan0 0 8 100 0.01
 
 
 if __name__ == "__main__":
-
-	dev = CANDriver(sys.argv[1],125000)
+	
+	if(sys.version_info >= (3,3)):
+		dev = CANDriver(TypeCan.SOCKET,name_dev=sys.argv[1])
+	else:
+		dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=125000)
 	dev.operate(Operate.START)
-	print "Benson mark Usage: python fuzzran.py <candev> <byterange1> <byterange2> <framecount> <delay time>"
+	print ("Benson mark Usage: python fuzzran.py <candev> <byterange1> <byterange2> <framecount> <delay time>")
 
 	
 	for i in range (0,int(sys.argv[4])):

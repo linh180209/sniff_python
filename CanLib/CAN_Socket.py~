@@ -41,7 +41,7 @@ class CANSocket:
 			self.flag_run = True
 			self.socket.bind((self.name_dev,))
 			self.start_time = time.time()
-		else if(flag == Operate.STOP):
+		elif(flag == Operate.STOP):
 			self.flag_run = False
 			self.sock.close()
 

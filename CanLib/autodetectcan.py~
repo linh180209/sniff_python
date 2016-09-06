@@ -7,10 +7,15 @@ import time
 
 # This function is to detect can frames and set baudrate automatically
 # sudo python autodetectcan.py /dev/ttyACM0
+# or
+# sudo python3.4 autodetectcan.py vcan0
 
 def detect_can(can_dev):  # dev is object of vtbox dev 
+	if(sys.version_info >= (3,3)):
+		box = CANDriver(TypeCan.SOCKET,name_dev=can_dev)
+	else:
+		box = CANDriver(TypeCan.SERIAL,port=can_dev,bit_rate=125000)
 
-	box = CANDriver(TypeCan.SERIAL, port=can_dev,bit_rate=125000)
 	boxq = ISOTP_driver(box)
 	boxq.operate(Operate.START)
 
@@ -37,7 +42,7 @@ def detect_can(can_dev):  # dev is object of vtbox dev
 			try:
 				recvfr,flag = boxq.get_packet(timeout=0.5, filter=None)
 				if (recvfr != None):
-					print "Detected CAN Bus baudrate successfully!"
+					print ("Detected CAN Bus baudrate successfully!")
 
 					if baudset == 'S0\r':
 						baudrate = 10000
@@ -60,7 +65,7 @@ def detect_can(can_dev):  # dev is object of vtbox dev
 					else:
 					    raise ValueError("baudrate not supported")
 
-					print baudrate 
+					print (baudrate) 
 					
 					detected = 1
 			except:
@@ -69,7 +74,7 @@ def detect_can(can_dev):  # dev is object of vtbox dev
 		i +=1		
 		
 		if i > 8:
-			print "No CAN message detected!"
+			print ("No CAN message detected!")
 			i = 0	
 
 		if detected:
@@ -77,7 +82,7 @@ def detect_can(can_dev):  # dev is object of vtbox dev
 			return baudrate
 
 		baudset = 'S'+str(i)+'\r'
-		print baudset
+		print (baudset)
 		
 
 
