@@ -50,7 +50,7 @@ def analyzebyte(dev,canid,indicate1=0,indicate2=8, delay=0.01,cloudflag="local")
 if __name__ == "__main__":
 
 	print "Usage: python dish.py <candev> <can ID> <byterange1> <byterange2> <delay time> <testing mode>"
-	dev = CANDriver(sys.argv[1],125000)
+	dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=125000)
 	dev.operate(Operate.START)
 	analyzebyte(dev,sys.argv[2],int(sys.argv[3]),int(sys.argv[4]), float(sys.argv[5]),"local")	
 

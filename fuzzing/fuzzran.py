@@ -14,7 +14,7 @@ from CanLib.CAN_Driver import *
 
 if __name__ == "__main__":
 
-	dev = CANDriver(sys.argv[1],125000)
+	dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=125000)
 	dev.operate(Operate.START)
 	print "Benson mark Usage: python fuzzran.py <candev> <byterange1> <byterange2> <framecount> <delay time>"
 

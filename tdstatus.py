@@ -55,7 +55,7 @@ def recover(devq,udsentry = 0x7df):  #recover the sys to default section
 if __name__ == "__main__":
 	
 
-	dev = CANDriver(sys.argv[1],int(sys.argv[2]))
+	dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=int(sys.argv[2]))
 	#autodetectcan.detect_can(dev)
 	devq = ISOTP_driver(dev)
 	devq.operate(Operate.START)

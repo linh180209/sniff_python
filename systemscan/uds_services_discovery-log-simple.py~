@@ -3,7 +3,7 @@ sys.path.append("..")
 from CanLib.CAN_protocol import *
 from CanLib.CAN_Packet import * 
 from CanLib.CAN_Driver import *
-from CanLib.CAN_Socket import *
+from CanLib.vtlog import *
 from reversing import autoscan
 import random
 import math
@@ -92,7 +92,7 @@ def discoverdst(dev,timeout=1):
 	
 	found_ids = []	
 	vtmsgbuffer = []
-	VTlogfile = CANSocket()
+	VTlogfile = VTlog()
 	dsts = []
 	#/// comments
 	vtmsgbuffer,found_ids = autoscan.collectAllID(dev,3)
@@ -161,7 +161,7 @@ def discoverservices(dev,dsts=[],timeout=1):  # Scans for supported DCM services
 	fr.configure(0x00,8,datatemp)
 
 	vtmsgbuffer = []
-	VTlogfile = CANSocket()	
+	VTlogfile = VTlog()	
 
 	devq = ISOTP_driver(dev)
 	devq.operate(Operate.START)
@@ -231,7 +231,7 @@ def discoversubfunctions(dev,supported_services=[],timeout=1):   #Scans for subf
 	fr.configure(0x00,8,datatemp)
 
 	vtmsgbuffer = []
-	VTlogfile = CANSocket()
+	VTlogfile = VTlog()
 
 	devq = ISOTP_driver(dev)
 	devq.operate(Operate.START)
@@ -332,7 +332,7 @@ if __name__ == "__main__":
 	supported_subfunc = []
 	
 	
-	dev = CANDriver(sys.argv[1],int(sys.argv[2]))
+	dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=int(sys.argv[2]))
 	dev.operate(Operate.START)
 
 	dsts = discoverdst(dev,float(sys.argv[3]))	

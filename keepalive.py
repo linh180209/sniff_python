@@ -26,8 +26,6 @@ def feedstart(devq,udsentry = 0x7df):   #devq is object of can queue
 	return keeptask
 
 
-
-
 def feedtask(canid):   #devq is object of can queue 
 
 	data = [0x02, 0x3E, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00]
@@ -51,7 +49,7 @@ if __name__ == "__main__":
 		print 'You must specify one can device and Request ID'
 		exit(1)
 
-	dev = CANDriver(sys.argv[1],int(sys.argv[3]))
+	dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=int(sys.argv[3]))
 	devq = ISOTP_driver(dev)
 	devq.operate(Operate.START)
 		

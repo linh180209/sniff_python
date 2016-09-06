@@ -3,7 +3,7 @@ sys.path.append("..")
 import random
 import math
 import time
-from CanLib.fuzzing import cangendata
+from fuzzing import cangendata
 from CanLib.CAN_Packet import *
 from CanLib.CAN_Driver import *
 
