@@ -31,7 +31,8 @@ def detect_can(can_dev):  # dev is object of vtbox dev
 
 	while True:
 		box.operate(Operate.STOP)
-		box.ser.write(baudset)
+		if(box.type == TypeCan.SERIAL):
+			box.ser.write(baudset)
 		box.operate(Operate.START)
 		if i in [4,6]:
 			loop = 4

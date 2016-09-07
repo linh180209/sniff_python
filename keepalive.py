@@ -54,8 +54,10 @@ if __name__ == "__main__":
 		exit(1)
 	if(sys.version_info >= (3,3)):
 		dev = CANDriver(TypeCan.SOCKET,name_dev=sys.argv[1])
+		type = TypeCan.SOCKET
 	else:
 		dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=int(sys.argv[3]))
+		type = TypeCan.SERIAL
 	devq = ISOTP_driver(dev)
 	devq.operate(Operate.START)
 		
@@ -64,7 +66,10 @@ if __name__ == "__main__":
 	print ("Keep alive produce is running")
 
 	while True:
-		c = raw_input("Still sending frames to the bus, stop the process? (y or n)")
+		if(type == TypeCan.SOCKET):
+			c = input("Still sending frames to the bus, stop the process? (y or n)")
+		else:
+			c = raw_input("Still sending frames to the bus, stop the process? (y or n)")
 		if(c == 'y'):
 			feedstop(taskname)
 			devq.operate(Operate.STOP)

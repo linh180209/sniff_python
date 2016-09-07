@@ -6,7 +6,7 @@ import random
 import time
 import select
 import string
-from const import *
+from spoofing.const import *
 from CanLib.CAN_Driver import *
 from CanLib.vtlog import *
 from CanLib.CAN_Packet import *
@@ -1188,6 +1188,9 @@ def handle_pkt(dev,frame):
 if __name__ == "__main__":
 	can_name = None
 	print ("sudo python udsspoof.py candev baudrate")
+	print ("or")
+	print ("sudo python3.4 udsspoof.py candev")
+
 	try:
 		opts, args = getopt.getopt(sys.argv[1:], "cV:zl:vFh", ["help="])
 		if (len(args) < 1):
@@ -1241,7 +1244,7 @@ if __name__ == "__main__":
 	while((time.time()-start_tv) < 3*60):
 		print (count)
 		count += 1		
-		frame = dev.receive_driver()
+		frame,flag = dev.receive_driver()
 		logdataobj.append(frame)
 		handle_pkt(dev, frame)
 		handle_pending_data(dev)

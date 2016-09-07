@@ -69,7 +69,10 @@ class CANDriver:
 				self.socket.bind((self.name_dev,))
 				self.start_time = time.time()	
 		elif(flag == Operate.STOP):
-			self.ser.write('C\r')
+			if(self.type == TypeCan.SERIAL):
+				self.ser.write('C\r')
+			else:
+				self.socket.close()	
 
 
 	def receive_driver(self):
@@ -124,7 +127,7 @@ class CANDriver:
 		
 			packet = CAN_Packet()
 			packet.configure(id,len,[d0, d1, d2, d3, d4, d5, d6, d7],is_extended_id=is_extended)
-			return packet
+			return packet,True
 
 	def send_driver(self, packet):
 		if(self.type == TypeCan.SERIAL):
@@ -182,7 +185,7 @@ class CANDriver:
 		VTMessagearray	= VTlf.parselog(filename)
 
 		for i in range(0,len(VTMessagearray)):
-			packet = Packet()
+			packet = CAN_Packet()
 			packet.configure(VTMessagearray[i].id,VTMessagearray[i].dlc,VTMessagearray[i].data)
 			count = VTMessagearray[i].count
 	
@@ -190,7 +193,10 @@ class CANDriver:
 				dev.send_driver(packet)
 				time.sleep(VTMessagearray[i].delay)
 				print (packet)
-			c = raw_input("Press Enter to go ahead!")
+			if(self.type == TypeCan.SOCKET):
+				c = input("Press Enter to go ahead!")
+			else:
+				c = raw_input("Press Enter to go ahead!")
 	
 		return True
 
