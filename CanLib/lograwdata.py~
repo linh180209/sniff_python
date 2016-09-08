@@ -2,10 +2,10 @@ import os
 import sys
 import time
 sys.path.append("..")
-from CAN_Driver import *
-from vtlog import *
-from CAN_protocol import *
-from CAN_Packet import *
+from CanLib.CAN_Driver import *
+from CanLib.vtlog import *
+from CanLib.CAN_protocol import *
+from CanLib.CAN_Packet import *
 
 #This function is to log can frames to file(jason format). 
 #Example: 

@@ -47,7 +47,9 @@ def start(self,dev,logtime=5):  #no need this function, we can put sys argv as i
 
 if __name__ == "__main__":
 	
-	print ("Usage: sudo python logdata.py candev baudrate logtime")	
+	print ("Usage: sudo python logdata.py candev baudrate logtime")
+	print ("or")
+	print ("Usage: sudo python3.4 logdata.py candev logtime")		
 
 	if (len(sys.argv) < 2):
 		print ('You must specify one can device')

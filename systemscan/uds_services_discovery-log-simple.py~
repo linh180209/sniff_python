@@ -16,7 +16,7 @@ import os
 # This program is to scan system automatically and find dst,Services,Subfunctions.
 # sudo python uds-services-discovery.py /dev/ttyACM0 125000 0.5
 # or
-# # sudo python3.4 uds-services-discovery.py vcan0 0.5
+#sudo python3.4 uds-services-discovery.py vcan0 0.5
 # payloads: 125000(baudrate),0.5(timeout 0.5 second)
 
 SERVICE_NAMES = {

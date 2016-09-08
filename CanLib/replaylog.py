@@ -39,7 +39,7 @@ if __name__ == "__main__":
 	
 	if(sys.version_info >= (3,3)):
 		dev = CANDriver(TypeCan.SOCKET,name_dev=sys.argv[1])
-	
+		dev.operate(Operate.START)
 		if(sys.argv[2][-4:] == "json"):	# send frames from log file  
 
 			if(len(sys.argv) > 3):
@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
 	else:
 		dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=int(sys.argv[3]))
-	
+		dev.operate(Operate.START)
 		if(sys.argv[2][-4:] == "json"):	# send frames from log file  
 
 			if(len(sys.argv) > 4):

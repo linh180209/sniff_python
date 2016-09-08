@@ -1,4 +1,4 @@
-from CanLib.CAN_Packet import *
+from CanLib.	CAN_Packet import *
 import multiprocessing
 
 try:

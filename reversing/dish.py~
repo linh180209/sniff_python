@@ -21,12 +21,14 @@ def analyzebyte(dev,canid,indicate1=0,indicate2=8, delay=0.01,cloudflag="local")
 	direction = "up"
 	loopflag = 1
 		
-	while startbase <> top or startbase <> bottom:		
+	while startbase != top or startbase != bottom:		
 		#regular(dev,canid,indicate1=0,indicate2=8,startbase=0x80, topcount=0xFF, lowcount=0x0,direction="up",cloudflag="local",delay=0.01)
 		cangendata.regular(dev,canid,indicate1,indicate2,startbase,top,bottom,direction,cloudflag, delay)
 		
-		
-		dishdirection = raw_input("\nRepeat or Reverse Direction or nothing?(y,r or n): \r\n")
+		if(dev.type == TypeCan.SOCKET):
+			dishdirection = input("\nRepeat or Reverse Direction or nothing?(y,r or n): \r\n")
+		elif(dev.type == TypeCan.SERIAL):
+			dishdirection = raw_input("\nRepeat or Reverse Direction or nothing?(y,r or n): \r\n")
 		if dishdirection == "r":
 			if direction == "up":
 				direction = "down"			
@@ -40,7 +42,10 @@ def analyzebyte(dev,canid,indicate1=0,indicate2=8, delay=0.01,cloudflag="local")
 				top = startbase
 				startbase = str(hex((int(startbase,16)+int(bottom,16))/2 ))
 			
-			dishdirection = raw_input("\ngo deeply, up or down?(u or d): \r\n")
+			if(dev.type == TypeCan.SOCKET):
+				dishdirection = input("\ngo deeply, up or down?(u or d): \r\n")
+			elif(dev.type == TypeCan.SERIAL):
+				dishdirection = raw_input("\ngo deeply, up or down?(u or d): \r\n")
 				
 			if dishdirection == "u":
 				direction = "up"		

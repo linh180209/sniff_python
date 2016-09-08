@@ -17,7 +17,7 @@ from reversing import bit
 # This program is to scan can data automatically and try to revease the data
 # sudo python autoscan.py /dev/ttyACM0 0 8 125000
 # or
-# sudo python autoscan.py vcan0 0 8
+# sudo python3.4 autoscan.py vcan0 0 8
 
 def collectAllID(dev,totalframecount=3000,filename=None): #receive frames from dev in realtime. Or analyze frames from filename.
 
@@ -32,8 +32,8 @@ def collectAllID(dev,totalframecount=3000,filename=None): #receive frames from d
 	
 	for i in range(0,totalframecount):   #total number can frame 
 		try:
-			fr = dev.receive_driver()
-			#print fr
+			fr,flag = dev.receive_driver()
+			#print (fr)
 		except: 
 			pass
 		if fr != None:
@@ -78,7 +78,10 @@ def reverse(dev,fridbuffer=[],fuzzframecount=200,byterange1=0,byterange2=8):
 			vtmsgbuffer.append(vtmsg)
 			time.sleep(0.01)  #10ms/frame
 		print (i)
-		fuzzcomment = raw_input("\nCAN ID:0x%X Any affection(y or n)? if no, press Enter directly: \r\n" % (fr.id)) #if there're no affection, press Enter to continue the program directly
+		if(dev.type == TypeCan.SOCKET):
+			fuzzcomment = input("\nCAN ID:0x%X Any affection(y or n)? if no, press Enter directly: \r\n" % (fr.id))
+		elif(dev.type == TypeCan.SERIAL):
+			fuzzcomment = raw_input("\nCAN ID:0x%X Any affection(y or n)? if no, press Enter directly: \r\n" % (fr.id)) #if there're no affection, press Enter to continue the program directly
 		if fuzzcomment == "y":
 			vtmsgbuffer[-1]= VTMessage(fr.id,8,fr.get_payload(),1,0.01,"K",fuzzcomment)
 			keyid.append(fr.id)
@@ -96,7 +99,7 @@ if __name__ == "__main__":
 	
 	print ("Usage: python autoscan.py <candev> <byterange1> <byterange2> <baudrate>")
 	print ("or")
-	print ("Usage: python3.4 autoscan.py <candev> <byterange1> <byterange2> <baudrate>")
+	print ("Usage: python3.4 autoscan.py <candev> <byterange1> <byterange2>")
 
 	frbuffer = []
 	fridarray = []
@@ -164,7 +167,10 @@ if __name__ == "__main__":
 			dev.send_driver(frame)
 			time.sleep(VTMessagearray[i].delay)
 			print (frame)
-		c = raw_input("\nPress Enter to go ahead: \r\n")
+		if(dev.type == TypeCan.SOCKET):
+			c = input("\nPress Enter to go ahead: \r\n")
+		elif(dev.type == TypeCan.SERIAL):
+			c = raw_input("\nPress Enter to go ahead: \r\n")
 	
 	print ("key log file: %s" % (keylongfile))
 	print ("Finish Reversing!")

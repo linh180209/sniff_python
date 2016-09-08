@@ -9,9 +9,9 @@ from CanLib.vtlog import *
 
 #This function is to analyze the affection when setting different bits of can frame 
 #Example: 
-# sudo python dish.py /dev/ttyACM0 0x266 0 1 0.01 local 125000
+# sudo python bit.py /dev/ttyACM0 0x266 0 1 0.01 local 125000
 # or
-# sudo python3.4 dish.py vcan0 0x266 0 1 0.01 local
+# sudo python3.4 bit.py vcan0 0x266 0 1 0.01 local
 # payloads meaning: 0x266(can id), 0 1(data indicator) 0.01(time gap between frames) local(run in local) 125000(can bus baudrate)
 
 def SET_BIT(self, val, bitIndex):
@@ -72,17 +72,27 @@ def analyzebit(dev,canid,indicate1=0,indicate2=8, delay=0.01,cloudflag="local"):
 					dev.send_driver(fr)
 					dev.send_driver(fr)
 					print (fr)
-					bitcomment = raw_input("\nrepeat?(y or n): \r\n")
+					if(dev.type == TypeCan.SOCKET):
+						bitcomment = input("\nrepeat?(y or n): \r\n")
+					elif(dev.type == TypeCan.SERIAL):
+						bitcomment = raw_input("\nrepeat?(y or n): \r\n")
 					if bitcomment == "n":
 						loop = 0
-			bitcomment = raw_input("\nimport bit? if yes, please comment the affection. if no, press Enter directly: \r\n")
+
+			if(dev.type == TypeCan.SOCKET):
+				bitcomment = input("\nimport bit? if yes, please comment the affection. if no, press Enter directly: \r\n")
+			elif(dev.type == TypeCan.SERIAL):
+				bitcomment = raw_input("\nimport bit? if yes, please comment the affection. if no, press Enter directly: \r\n")
 				
 			if bitcomment != "":
 				vtmsg = VTMessage(canidint,8,data,5,delay,"S")
 				frbuffer.append(vtmsg)
 				frbuffer[-1]= VTMessage(fr.id,8,fr.get_payload(),5,0.01,"S",bitcomment)
-
-			c = raw_input("\nfinish the process?(y or n): \r\n")
+			
+			if(dev.type == TypeCan.SOCKET):
+				c = input("\nfinish the process?(y or n): \r\n")
+			elif(dev.type == TypeCan.SERIAL):
+				c = raw_input("\nfinish the process?(y or n): \r\n")
 
 			if c == "y":
 				exitbitana = 1

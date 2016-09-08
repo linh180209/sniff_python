@@ -6,7 +6,7 @@ import random
 import time
 import select
 import string
-from const import *
+from spoofing.const import *
 from CanLib.CAN_Driver import *
 from CanLib.vtlog import *
 from CanLib.CAN_Packet import *
@@ -1244,7 +1244,7 @@ if __name__ == "__main__":
 	while((time.time()-start_tv) < 3*60):
 		print (count)
 		count += 1		
-		frame = dev.receive_driver()
+		frame,flag = dev.receive_driver()
 		logdataobj.append(frame)
 		handle_pkt(dev, frame)
 		handle_pending_data(dev)

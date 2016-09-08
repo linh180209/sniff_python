@@ -116,7 +116,7 @@ def fraquire(dev,aquiretime=20,array_f = []):  # array_f to store array of frame
 		
 		frame = None
 		while(frame == None):
-			frame = dev.receive_driver()		
+			frame,flag = dev.receive_driver()		
 		array_f,array_print = add_frame(frame,array_f,array_print)
 	return array_f
 
@@ -231,7 +231,10 @@ def replayarray1b1(frarray=[]):
 			for k in range(10):
 				dev.send_driver(fr)
 			print (fr)
-			c = raw_input("Import frame? (write comment directly), press r to repeat and Enter directly to proceed\n")
+			if(sys.version_info >= (3,0)):
+				c = input("Import frame? (write comment directly), press r to repeat and Enter directly to proceed\n")
+			else:
+				c = raw_input("Import frame? (write comment directly), press r to repeat and Enter directly to proceed\n")
 				
 			if c == "r":
 				flags_comment = 1			
@@ -256,7 +259,7 @@ if __name__ == "__main__":
 		print ('You must specify one can device')
 		exit(1)
 	if(sys.version_info >= (3,3)):
-		dev = CANDriver(TypeCan.SERIAL,name_dev=sys.argv[1])
+		dev = CANDriver(TypeCan.SOCKET,name_dev=sys.argv[1])
 	else:
 		dev = CANDriver(TypeCan.SERIAL,port=sys.argv[1],bit_rate=int(sys.argv[2]))
 	dev.operate(Operate.START)
@@ -278,8 +281,11 @@ if __name__ == "__main__":
 		for j in range(8):
 			if backgroudfrarray[i].bytechangecount[j] > 0:
 				backgroudfrarray[i].bytechangecount[j] = -1
-
-	c = raw_input("Please take action to change the vehicle status in 1 minutes(Press Enter to continue)...")
+	
+	if(dev.type == TypeCan.SOCKET):
+		c = input("Please take action to change the vehicle status in 1 minutes(Press Enter to continue)...")
+	elif(dev.type == TypeCan.SERIAL):
+		c = raw_input("Please take action to change the vehicle status in 1 minutes(Press Enter to continue)...")
 
 	VTlogfile = VTlog()
 	newfrarray = fraquire(dev,30,backgroudfrarray)
@@ -289,7 +295,10 @@ if __name__ == "__main__":
 	keyfrarray = get_keyframearray(backgroudfrarray,newfrarray)
 	longname.append(VTlogfile.logfrarray2file(VTlogfile,keyfrarray,"KR","Key frames of testing bus"))
 	
-	c = raw_input("Reversing done! Please press Enter to replay key frames(Press Enter to continue)...")
+	if(dev.type == TypeCan.SOCKET):
+		c = input("Reversing done! Please press Enter to replay key frames(Press Enter to continue)...")
+	elif(dev.type == TypeCan.SERIAL):
+		c = raw_input("Reversing done! Please press Enter to replay key frames(Press Enter to continue)...")
 	
 	replayarray1b1(keyfrarray)
 

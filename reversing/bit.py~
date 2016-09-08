@@ -72,17 +72,27 @@ def analyzebit(dev,canid,indicate1=0,indicate2=8, delay=0.01,cloudflag="local"):
 					dev.send_driver(fr)
 					dev.send_driver(fr)
 					print (fr)
-					bitcomment = raw_input("\nrepeat?(y or n): \r\n")
+					if(dev.type == TypeCan.SOCKET):
+						bitcomment = input("\nrepeat?(y or n): \r\n")
+					elif(dev.type == TypeCan.SERIAL):
+						bitcomment = raw_input("\nrepeat?(y or n): \r\n")
 					if bitcomment == "n":
 						loop = 0
-			bitcomment = raw_input("\nimport bit? if yes, please comment the affection. if no, press Enter directly: \r\n")
+
+			if(dev.type == TypeCan.SOCKET):
+				bitcomment = input("\nimport bit? if yes, please comment the affection. if no, press Enter directly: \r\n")
+			elif(dev.type == TypeCan.SERIAL):
+				bitcomment = raw_input("\nimport bit? if yes, please comment the affection. if no, press Enter directly: \r\n")
 				
 			if bitcomment != "":
 				vtmsg = VTMessage(canidint,8,data,5,delay,"S")
 				frbuffer.append(vtmsg)
 				frbuffer[-1]= VTMessage(fr.id,8,fr.get_payload(),5,0.01,"S",bitcomment)
-
-			c = raw_input("\nfinish the process?(y or n): \r\n")
+			
+			if(dev.type == TypeCan.SOCKET):
+				c = input("\nfinish the process?(y or n): \r\n")
+			elif(dev.type == TypeCan.SERIAL):
+				c = raw_input("\nfinish the process?(y or n): \r\n")
 
 			if c == "y":
 				exitbitana = 1
@@ -96,6 +106,8 @@ def analyzebit(dev,canid,indicate1=0,indicate2=8, delay=0.01,cloudflag="local"):
 if __name__ == "__main__":
 
 	print ("Usage: python bit.py <candev> <can ID> <byterange1> <byterange2> <delay time> <testing mode> <baudrate>")
+	print ("or")
+	print ("Usage: python3.4 bit.py <candev> <can ID> <byterange1> <byterange2> <delay time> <testing mode>")
 	if(sys.version_info >= (3,3)):
 		dev = CANDriver(TypeCan.SOCKET,name_dev=sys.argv[1])
 	else:

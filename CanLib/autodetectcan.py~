@@ -1,8 +1,8 @@
 import sys
 sys.path.append("..")
-from CAN_Packet import *
-from CAN_Driver import *
-from CAN_protocol import *
+from CanLib.CAN_Packet import *
+from CanLib.CAN_Driver import *
+from CanLib.CAN_protocol import *
 import time
 
 # This function is to detect can frames and set baudrate automatically

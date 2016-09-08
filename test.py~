@@ -1,0 +1,2 @@
+import sys
+c = input("Still sending frames to the bus, stop the process? (y or n)")
