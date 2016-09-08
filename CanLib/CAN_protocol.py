@@ -78,6 +78,9 @@ class ISOTP_driver(object):
 		try:
 			start_time = time.time()
 			while True:
+				# ensure we haven't gone over the timeout
+				if time.time() - start_time > timeout:
+					return None,True
 				msg,devstatusflag = self.queue_recv.get(timeout=timeout)
 				print ("0x%X"%msg.get_id())
 				if msg == None:
@@ -88,9 +91,7 @@ class ISOTP_driver(object):
 					return msg,True
 				elif devstatusflag == False:
 					return None,False
-				# ensure we haven't gone over the timeout
-				if time.time() - start_time > timeout:
-					return None,True
+			
 
 		except queue.Empty:
 		    return None,True

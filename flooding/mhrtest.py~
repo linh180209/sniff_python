@@ -24,7 +24,7 @@ def test(devq,framecount,delay,udsentry = 0x7df,sid = 0x01):   #devq is object o
 	for loop in range(0,framecount):  
 		devq.send_packet(fr)
 		
-		print (loop,fr)
+		print (loop,str(fr))
 		time.sleep(delay)
 		recvfr,flag = devq.get_packet(timeout=delay, filter=sid)
 		if recvfr != None:
@@ -44,7 +44,7 @@ def test_delay(devq,framecount,delay,udsentry = 0x7df,sid = 0x01):
 
 if __name__ == "__main__":
 	
-	print ("Usage: sudo python dosflood.py <candev> <baudrate> <canframe count> <time delay> <DEST ID> <SID>\n")
+	print ("Usage: sudo python dosflood.py <candev> <baudrate> <canframe count> <time delay> <DEST ID> <SID>")
 	print ("or")
 	print ("Usage: sudo python3.4 dosflood.py <candev> <canframe count> <time delay> <DEST ID> <SID>\n")	
 	if(sys.version_info >= (3,3)):
@@ -93,3 +93,4 @@ if __name__ == "__main__":
 		print ("Message Handling Delay(s):")
 		print (hdelay)
 		exit()
+

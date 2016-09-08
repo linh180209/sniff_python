@@ -32,8 +32,8 @@ def collectAllID(dev,totalframecount=3000,filename=None): #receive frames from d
 	
 	for i in range(0,totalframecount):   #total number can frame 
 		try:
-			fr = dev.receive_driver()
-			#print (fr)
+			fr,flag = dev.receive_driver()
+			print (fr)
 		except: 
 			pass
 		if fr != None:

@@ -97,7 +97,7 @@ def discoverdst(dev,timeout=1):
 	VTlogfile = VTlog()
 	dsts = []
 	#/// comments
-	vtmsgbuffer,found_ids = collectAllID(dev,3)
+	vtmsgbuffer,found_ids = collectAllID(dev,3000)
 	
 	fr = CAN_Packet()
 	#/// explain the payload the corresponding service type		0x02 means valid data of this frame. 0x10 means Diagnostics Section Control services. 0x01:Enter Default Section	

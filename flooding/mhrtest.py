@@ -24,7 +24,7 @@ def test(devq,framecount,delay,udsentry = 0x7df,sid = 0x01):   #devq is object o
 	for loop in range(0,framecount):  
 		devq.send_packet(fr)
 		
-		print (loop,fr)
+		print (loop,str(fr))
 		time.sleep(delay)
 		recvfr,flag = devq.get_packet(timeout=delay, filter=sid)
 		if recvfr != None:
@@ -93,3 +93,4 @@ if __name__ == "__main__":
 		print ("Message Handling Delay(s):")
 		print (hdelay)
 		exit()
+

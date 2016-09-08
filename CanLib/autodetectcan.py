@@ -34,11 +34,13 @@ def detect_can(can_dev):  # dev is object of vtbox dev
 		if(box.type == TypeCan.SERIAL):
 			box.ser.write(baudset)
 		box.operate(Operate.START)
+
 		if i in [4,6]:
 			loop = 4
 		else:
 			loop = 2
 		for j in range(0,loop):
+			time.sleep(0.5)
 			boxq.send_packet(fr)
 			try:
 				recvfr,flag = boxq.get_packet(timeout=0.5, filter=None)

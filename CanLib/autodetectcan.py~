@@ -30,15 +30,22 @@ def detect_can(can_dev):  # dev is object of vtbox dev
 	baudset = 'S'+str(i)+'\r'
 
 	while True:
+		time.sleep(1)
 		box.operate(Operate.STOP)
-		box.ser.write(baudset)
+		time.sleep(1)
+		if(box.type == TypeCan.SERIAL):
+			box.ser.write(baudset)
+		time.sleep(1)
 		box.operate(Operate.START)
+
 		if i in [4,6]:
 			loop = 4
 		else:
 			loop = 2
 		for j in range(0,loop):
+			time.sleep(0.5)
 			boxq.send_packet(fr)
+			print(str(fr))
 			try:
 				recvfr,flag = boxq.get_packet(timeout=0.5, filter=None)
 				if (recvfr != None):

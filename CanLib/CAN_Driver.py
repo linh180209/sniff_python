@@ -126,7 +126,7 @@ class CANDriver:
 			    is_extended = True
 		
 			packet = CAN_Packet()
-			packet.configure(id,len,[d0, d1, d2, d3, d4, d5, d6, d7],is_extended_id=is_extended)
+			packet.configure(id,len,[d0, d1, d2, d3, d4, d5, d6, d7],frtype='R',is_extended_id=is_extended)
 			return packet,True
 
 	def send_driver(self, packet):
