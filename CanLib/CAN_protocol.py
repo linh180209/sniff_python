@@ -82,7 +82,8 @@ class ISOTP_driver(object):
 				if time.time() - start_time > timeout:
 					return None,True
 				msg,devstatusflag = self.queue_recv.get(timeout=timeout)
-				print ("0x%X"%msg.get_id())
+				if not isinstance(msg, CAN_Packet):
+					return None,False
 				if msg == None:
 					return None,False
 				if not filter:
@@ -101,7 +102,8 @@ class ISOTP_driver(object):
 			start_time = time.time()
 			while True:
 				msg, devstatusflag = self.queue_recv.get(timeout=timeout)
-
+				if not isinstance(msg, CAN_Packet):
+					return None,False
 				if msg == None:
 					return None,False
 				#print msg

@@ -115,8 +115,9 @@ def fraquire(dev,aquiretime=20,array_f = []):  # array_f to store array of frame
 		
 		frame = None
 		while(frame == None):
-			frame,flag = dev.receive_driver()		
-		array_f,array_print = add_frame(frame,array_f,array_print)
+			frame,flag = dev.receive_driver()
+		if isinstance(frame, CAN_Packet):
+			array_f,array_print = add_frame(frame,array_f,array_print)
 	return array_f
 
 def statics_framearray(array_f):

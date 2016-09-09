@@ -1245,9 +1245,10 @@ if __name__ == "__main__":
 		print (count)
 		count += 1		
 		frame,flag = dev.receive_driver()
-		logdataobj.append(frame)
-		handle_pkt(dev, frame)
-		handle_pending_data(dev)
+		if isinstance(frame, CAN_Packet):
+			logdataobj.append(frame)
+			handle_pkt(dev, frame)
+			handle_pending_data(dev)
 		time.sleep(0.1)		
 
 	

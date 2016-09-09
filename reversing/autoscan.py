@@ -36,6 +36,8 @@ def collectAllID(dev,totalframecount=3000,filename=None): #receive frames from d
 			#print (fr)
 		except: 
 			pass
+		if not isinstance(fr, CAN_Packet):
+			pass
 		if fr != None:
 			if fr.id not in found_ids:
 				print("Last ID: 0x%X; total found %d" % (fr.id,len(found_ids) + 1))
