@@ -53,8 +53,9 @@ def print_all_frame(frame,array_print=[]):
 	array_print = add_frame_array_print(frame)
 	os.system("clear")
 	for i in range(len(array_print)):
-		printresult = print_frame(array_print[i])
-		print ("%d %s "% (i+1,printresult))
+		if isinstance(array_print[i], CAN_Packet):
+			printresult = print_frame(array_print[i])
+			print ("%d %s "% (i+1,printresult))
 	return array_print
 
 def add_frame_array_print(frame,array_print=[]):
@@ -106,8 +107,6 @@ def add_frame(frame,array_f = [],array_print = []):
 
 
 def fraquire(dev,aquiretime=20,array_f = []):  # array_f to store array of frames
-
-	
 	array_print = [] #to store array of printing frames
 	start_time = time.time()
 
@@ -270,7 +269,7 @@ if __name__ == "__main__":
 	longname = []
 
 	#collect backgroud frames of bus
-	backgroudfrarray = fraquire(dev,20)
+	backgroudfrarray = fraquire(dev,20,backgroudfrarray)
 
 	VTlogfile = VTlog()
 	longname.append(VTlogfile.logfrarray2file(VTlogfile,backgroudfrarray,"BR","Backgroud frames of testing bus"))
