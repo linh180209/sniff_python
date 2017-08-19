@@ -238,7 +238,7 @@ class ISOTP_driver(object):
 		return None
 
 	def parse_consecutive_frame(self,packet):
-		if(self.length_ms == None):
+		if(self.length_ms != None):
 			no_packet = packet.get_payload()[0] & 0xF
 			if(no_packet == self.s_number):
 				if(self.length_ms - self.byte_count < 7):
@@ -255,6 +255,7 @@ class ISOTP_driver(object):
 						i += 1
 
 				if self.byte_count == self.length_ms:
+					self.length_ms = None
 					return self.data_ms
 				elif self.byte_count > self.length_ms:
 					print ("data length not match")
